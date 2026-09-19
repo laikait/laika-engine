@@ -19,6 +19,7 @@ use Laika\Engine\Cache\Driver\MemcachedDriver;
 use Laika\Engine\Cache\Driver\RedisDriver;
 use Laika\Engine\Cache\Exceptions\CacheException;
 use Throwable;
+use Laika\Engine\Core\Support\Macroable;
 
 /**
  * The cache the application talks to.
@@ -33,6 +34,8 @@ use Throwable;
  */
 class Cache
 {
+    use Macroable;
+
     /** @var array<string,CacheDriverInterface> Built on first use, by driver name */
     protected array $drivers = [];
 

@@ -21,6 +21,8 @@ namespace Laika\Engine\Cache;
  * forever. Wrapping the value means the presence of the envelope answers
  * "is it cached", and the value inside answers "what is it" -- two different
  * questions that a bare value cannot keep apart.
+ *
+ * Final on purpose: an immutable value object.
  */
 final class Entry
 {

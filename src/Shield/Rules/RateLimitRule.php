@@ -20,6 +20,8 @@ use Laika\Engine\Shield\Support\RateLimiter;
  * Uses a file-based store by default (no external dependencies).
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class RateLimitRule implements RuleInterface
 {

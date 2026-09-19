@@ -17,6 +17,8 @@ use Laika\Engine\Shield\Contract\DetectorInterface;
  * MaxMind GeoLite2-Country (.mmdb) database file.
  *
  * @package Laika\Engine\Shield\Detectors
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class GeoIpDetector implements DetectorInterface
 {

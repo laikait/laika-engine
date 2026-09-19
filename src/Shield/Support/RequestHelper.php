@@ -15,6 +15,8 @@ namespace Laika\Engine\Shield\Support;
  * Convenient wrappers around PHP superglobals for request data extraction.
  *
  * @package Laika\Engine\Shield\Support
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class RequestHelper
 {

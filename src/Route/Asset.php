@@ -34,6 +34,8 @@ use Throwable;
  *
  * Every rejection renders the same 404 an unrouted URL renders, so a forbidden
  * path is indistinguishable from a missing one.
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class Asset
 {

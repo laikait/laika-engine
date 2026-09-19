@@ -34,6 +34,9 @@ class DriverFactory
     /** Custom drivers registered by the user */
     private static array $custom = [];
 
+    /** @var array<string,callable> Custom drivers registered with a resolver */
+    private static array $resolvers = [];
+
     /**
      * Register a custom driver.
      *
@@ -49,6 +52,21 @@ class DriverFactory
     }
 
     /**
+     * Register a custom driver built by a resolver.
+     *
+     * The resolver form of register(), for a driver that needs constructor
+     * arguments. Checked before register()'d classes and the built-in aliases,
+     * so it can also replace a built-in driver.
+     *
+     * @param string   $alias    e.g. "mydb"
+     * @param callable $resolver Receives the connection config array, returns a DriverInterface
+     */
+    public static function extend(string $alias, callable $resolver): void
+    {
+        self::$resolvers[strtolower($alias)] = $resolver;
+    }
+
+    /**
      * Drop a custom driver registration.
      *
      * Built-in aliases are never removed — this only undoes register(). Without
@@ -61,11 +79,11 @@ class DriverFactory
     {
         $alias = strtolower($alias);
 
-        if (!isset(self::$custom[$alias])) {
+        if (!isset(self::$custom[$alias]) && !isset(self::$resolvers[$alias])) {
             return false;
         }
 
-        unset(self::$custom[$alias]);
+        unset(self::$custom[$alias], self::$resolvers[$alias]);
 
         return true;
     }
@@ -77,6 +95,16 @@ class DriverFactory
     {
         $driver = strtolower($config['driver'] ?? '');
 
+        if (isset(self::$resolvers[$driver])) {
+            $instance = (self::$resolvers[$driver])($config);
+
+            if (!$instance instanceof DriverInterface) {
+                throw new DriverException("Driver [{$driver}] must resolve to DriverInterface.");
+            }
+
+            return $instance;
+        }
+
         if (isset(self::$custom[$driver])) {
             return new self::$custom[$driver]();
         }
@@ -86,13 +114,13 @@ class DriverFactory
         }
 
         throw new DriverException(
-            "Unsupported driver [{$driver}]. Supported: " . implode(', ', array_keys(self::$map))
+            "Unsupported driver [{$driver}]. Supported: " . implode(', ', static::supported())
         );
     }
 
     /** Return all known driver aliases. */
     public static function supported(): array
     {
-        return array_keys(array_merge(self::$map, self::$custom));
+        return array_keys(array_merge(self::$map, self::$custom, self::$resolvers));
     }
 }

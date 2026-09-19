@@ -18,14 +18,14 @@ namespace Laika\Engine\Shield\Config;
  *
  * @package Laika\Engine\Shield\Config
  */
-final class XssConfig extends SectionConfig
+class XssConfig extends SectionConfig
 {
     /** @var string[] */
-    private array $skipKeys = [];
+    protected array $skipKeys = [];
 
-    private bool $scanBody = true;
+    protected bool $scanBody = true;
 
-    private bool $scanHeaders = false;
+    protected bool $scanHeaders = false;
 
     /**
      * @param string[]|null $value

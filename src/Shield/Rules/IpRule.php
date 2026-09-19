@@ -23,6 +23,8 @@ use Laika\Engine\Shield\Support\IpHelper;
  *  3. Otherwise → allow.
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class IpRule implements RuleInterface
 {

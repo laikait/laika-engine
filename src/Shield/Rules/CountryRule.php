@@ -25,6 +25,8 @@ use Laika\Engine\Shield\Support\IpHelper;
  * Country codes must be ISO 3166-1 alpha-2 (e.g. 'US', 'CN', 'RU').
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class CountryRule implements RuleInterface
 {

@@ -22,6 +22,8 @@ use Laika\Engine\Model\Converter\Warning;
  *
  * mysqldump writes extended inserts — one statement carrying thousands of rows
  * — so the tuples are yielded one at a time rather than materialised as a list.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class InsertParser
 {

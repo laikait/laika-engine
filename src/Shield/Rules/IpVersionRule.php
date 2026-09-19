@@ -19,6 +19,8 @@ use Laika\Engine\Shield\Support\IpHelper;
  * Useful if your application intentionally does not serve IPv6 traffic, or vice-versa.
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class IpVersionRule implements RuleInterface
 {

@@ -38,6 +38,8 @@ use Throwable;
  * Several of these already had a reset method. None was ever called. They are
  * gathered here so a new memo has exactly one place to be registered, and the
  * host has exactly one thing to call.
+ *
+ * Final on purpose: an internal part of the queue worker reset, not an extension point.
  */
 final class ProcessState
 {

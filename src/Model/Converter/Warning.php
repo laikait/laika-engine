@@ -14,6 +14,8 @@ namespace Laika\Engine\Model\Converter;
 
 /**
  * One thing the conversion could not do faithfully.
+ *
+ * Final on purpose: an immutable value object.
  */
 final class Warning
 {

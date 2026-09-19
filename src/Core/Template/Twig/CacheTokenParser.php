@@ -23,6 +23,8 @@ use Twig\TokenParser\AbstractTokenParser;
  *
  * The key is any expression. The optional second expression is a TTL in
  * seconds; without one the cache's configured default applies.
+ *
+ * Final on purpose: an internal part of the {% cache %} Twig tag, not an extension point.
  */
 final class CacheTokenParser extends AbstractTokenParser
 {

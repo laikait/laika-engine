@@ -32,6 +32,8 @@ use Throwable;
  * CIDR work is delegated to Laika\Engine\Shield\Support\IpHelper, which laika-core
  * already requires and which guards against the out-of-range prefix that would
  * otherwise be a fatal negative bit shift.
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class ProxyTrust
 {

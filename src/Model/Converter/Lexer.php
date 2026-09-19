@@ -28,6 +28,8 @@ namespace Laika\Engine\Model\Converter;
  *   foreach ($lexer->drain() as $statement) { ... }
  *   // ...more chunks...
  *   foreach ($lexer->finish() as $statement) { ... }   // flush the tail
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class Lexer
 {

@@ -38,7 +38,7 @@ use Laika\Engine\Route\Contracts\PipelineInterface;
  * clearResolvedInstance). Relay resolves those itself instead of forwarding, so a
  * colliding name would silently do the wrong thing through Laika\Engine\Services\Resource.
  */
-final class Resource
+class Resource
 {
     /** @var string Resource name pattern */
     private const NAME_PATTERN = '/^[a-z][a-z0-9_]*$/i';
@@ -76,10 +76,10 @@ final class Resource
      */
     public static function register(string $name, string $path, ?string $base_namespace = null, ?string $contract = null): void
     {
-        self::define(new ResourceDefinition(
-            self::normalizeName($name),
-            self::normalizePath($path),
-            self::normalizeNamespace($base_namespace),
+        static::define(new ResourceDefinition(
+            static::normalizeName($name),
+            static::normalizePath($path),
+            static::normalizeNamespace($base_namespace),
             $contract,
             'runtime'
         ));
@@ -126,7 +126,7 @@ final class Resource
 
         // Late registration still takes effect
         if (self::$booted) {
-            self::seedPackageFile($file);
+            static::seedPackageFile($file);
         }
     }
 
@@ -139,12 +139,12 @@ final class Resource
     public static function getResources(?string $name = null): array
     {
         if ($name !== null) {
-            return self::resolve($name);
+            return static::resolve($name);
         }
 
         $all = [];
-        foreach (self::names() as $resource) {
-            $all[$resource] = self::resolve($resource);
+        foreach (static::names() as $resource) {
+            $all[$resource] = static::resolve($resource);
         }
         return $all;
     }
@@ -158,14 +158,14 @@ final class Resource
      */
     public static function getClasses(string $name, ?string $contract = null): array
     {
-        $name = self::normalizeName($name);
+        $name = static::normalizeName($name);
 
-        if (!self::isClassMap($name)) {
+        if (!static::isClassMap($name)) {
             throw ResourceException::notClassMap($name);
         }
 
-        $classes = self::resolve($name);
-        $contract ??= self::contract($name);
+        $classes = static::resolve($name);
+        $contract ??= static::contract($name);
 
         foreach ($classes as $class) {
             if (!class_exists($class)) {
@@ -187,7 +187,7 @@ final class Resource
      */
     public static function getFiles(string $name): array
     {
-        return self::resolve($name);
+        return static::resolve($name);
     }
 
     /**
@@ -196,7 +196,7 @@ final class Resource
      */
     public static function names(): array
     {
-        self::boot();
+        static::boot();
 
         $names = [];
         foreach (self::$definitions as $definition) {
@@ -215,7 +215,7 @@ final class Resource
      */
     public static function has(string $name): bool
     {
-        return in_array(self::normalizeName($name), self::names(), true);
+        return in_array(static::normalizeName($name), static::names(), true);
     }
 
     /**
@@ -227,7 +227,7 @@ final class Resource
      */
     public static function isClassMap(string $name): bool
     {
-        foreach (self::definitions($name) as $definition) {
+        foreach (static::definitions($name) as $definition) {
             if ($definition->isClassMap()) {
                 return true;
             }
@@ -242,13 +242,13 @@ final class Resource
      */
     public static function definitions(?string $name = null): array
     {
-        self::boot();
+        static::boot();
 
         if ($name === null) {
             return array_values(self::$definitions);
         }
 
-        $name = self::normalizeName($name);
+        $name = static::normalizeName($name);
         return array_values(array_filter(
             self::$definitions,
             static fn(ResourceDefinition $d): bool => $d->name === $name
@@ -271,8 +271,8 @@ final class Resource
         $base = realpath($definition->path) ?: $definition->path;
 
         $items = [];
-        foreach (self::scan($definition->path) as $file) {
-            $items[] = $definition->isClassMap() ? self::className($definition, $base, $file) : $file;
+        foreach (static::scan($definition->path) as $file) {
+            $items[] = $definition->isClassMap() ? static::className($definition, $base, $file) : $file;
         }
         return $items;
     }
@@ -295,7 +295,7 @@ final class Resource
      */
     public static function compile(): array
     {
-        self::boot();
+        static::boot();
 
         $definitions = [];
         foreach (self::$definitions as $definition) {
@@ -304,7 +304,7 @@ final class Resource
 
         return [
             'definitions'   =>  $definitions,
-            'resources'     =>  self::getResources(),
+            'resources'     =>  static::getResources(),
         ];
     }
 
@@ -316,8 +316,8 @@ final class Resource
      */
     public static function cache(?string $file = null): string
     {
-        $file ??= self::manifestPath();
-        $data = self::compile();
+        $file ??= static::manifestPath();
+        $data = static::compile();
         $directory = dirname($file);
 
         if (!is_dir($directory)) {
@@ -340,7 +340,7 @@ final class Resource
      */
     public static function loadManifest(?string $file = null): bool
     {
-        $file ??= self::manifestPath();
+        $file ??= static::manifestPath();
 
         if (!is_file($file)) {
             return false;
@@ -355,7 +355,7 @@ final class Resource
         self::$booted = true;
 
         foreach ($data['definitions'] as $definition) {
-            self::define(ResourceDefinition::fromArray($definition));
+            static::define(ResourceDefinition::fromArray($definition));
         }
 
         // Set after define(), which invalidates the memo for each name it adds
@@ -395,7 +395,7 @@ final class Resource
             return;
         }
 
-        $name = self::normalizeName($name);
+        $name = static::normalizeName($name);
         foreach (self::$definitions as $key => $definition) {
             if ($definition->name === $name) {
                 unset(self::$definitions[$key]);
@@ -414,20 +414,20 @@ final class Resource
      * @return string[]
      * @throws ResourceException
      */
-    private static function resolve(string $name): array
+    protected static function resolve(string $name): array
     {
-        $name = self::normalizeName($name);
+        $name = static::normalizeName($name);
 
         if (isset(self::$resolved[$name])) {
             return self::$resolved[$name];
         }
 
-        self::boot();
+        static::boot();
 
         $items = [];
         foreach (self::$definitions as $definition) {
             if ($definition->name === $name) {
-                $items = array_merge($items, self::entries($definition));
+                $items = array_merge($items, static::entries($definition));
             }
         }
 
@@ -439,7 +439,7 @@ final class Resource
      * @param string $dir
      * @return string[]
      */
-    private static function scan(string $dir): array
+    protected static function scan(string $dir): array
     {
         // A declared-but-absent directory is normal: apps delete what they don't use
         if (!is_dir($dir)) {
@@ -460,7 +460,7 @@ final class Resource
      * @param string $file
      * @return string
      */
-    private static function className(ResourceDefinition $definition, string $base, string $file): string
+    protected static function className(ResourceDefinition $definition, string $base, string $file): string
     {
         // substr, not str_replace: the base path may appear again inside the file name
         $relative = trim(substr($file, strlen($base)), '/\\');
@@ -477,9 +477,9 @@ final class Resource
      * @param string $name Resource Name
      * @return ?string
      */
-    private static function contract(string $name): ?string
+    protected static function contract(string $name): ?string
     {
-        foreach (self::definitions($name) as $definition) {
+        foreach (static::definitions($name) as $definition) {
             if ($definition->contract) {
                 return $definition->contract;
             }
@@ -493,7 +493,7 @@ final class Resource
      * @return string
      * @throws ResourceException
      */
-    private static function normalizeName(string $name): string
+    protected static function normalizeName(string $name): string
     {
         if (!preg_match(self::NAME_PATTERN, $name)) {
             throw ResourceException::invalidName($name);
@@ -508,7 +508,7 @@ final class Resource
      * @param string $path
      * @return string
      */
-    private static function normalizePath(string $path): string
+    protected static function normalizePath(string $path): string
     {
         // A missing directory is recorded, not fatal: register() runs during
         // autoload, before the error handler exists, so throwing here produces
@@ -522,7 +522,7 @@ final class Resource
      * @return ?string
      * @throws ResourceException
      */
-    private static function normalizeNamespace(?string $namespace): ?string
+    protected static function normalizeNamespace(?string $namespace): ?string
     {
         if ($namespace === null || $namespace === '') {
             return null;
@@ -542,7 +542,7 @@ final class Resource
      * the root composer.json. Anything registered at runtime is additive.
      * @return void
      */
-    private static function boot(): void
+    protected static function boot(): void
     {
         if (self::$booted) {
             return;
@@ -553,32 +553,32 @@ final class Resource
 
         // A compiled manifest short-circuits discovery entirely — no installed.json,
         // no config read, no directory walking
-        if (!DEBUG && self::loadManifest()) {
+        if (!DEBUG && static::loadManifest()) {
             return;
         }
 
         // The application declares resources exactly like a package does, in the
         // root composer.json. Read from disk rather than installed.json, which
         // never carries the root package and would lag behind edits anyway.
-        $app = self::manifest(APP_PATH . DS . 'composer.json');
+        $app = static::manifest(APP_PATH . DS . 'composer.json');
 
         // A name the application declares replaces its default outright, rather
         // than adding a second location for the same resource
-        self::seed(array_diff_key(self::defaults(), $app), 'default');
+        static::seed(array_diff_key(static::defaults(), $app), 'default');
 
         foreach (self::$packages as $file) {
-            self::seedPackageFile($file);
+            static::seedPackageFile($file);
         }
 
-        self::seedInstalledPackages();
-        self::seed($app, 'app');
+        static::seedInstalledPackages();
+        static::seed($app, 'app');
     }
 
     /**
      * Framework Defaults For an Application That Declares Nothing
      * @return array
      */
-    private static function defaults(): array
+    protected static function defaults(): array
     {
         return [
             'models'        =>  [
@@ -630,7 +630,7 @@ final class Resource
      * @param string $file
      * @return array
      */
-    private static function manifest(string $file): array
+    protected static function manifest(string $file): array
     {
         if (!is_file($file)) {
             return [];
@@ -645,16 +645,16 @@ final class Resource
      * @param string $file
      * @return void
      */
-    private static function seedPackageFile(string $file): void
+    protected static function seedPackageFile(string $file): void
     {
-        $resources = self::manifest($file);
+        $resources = static::manifest($file);
 
         if (!$resources) {
             return;
         }
 
         $json = json_decode((string) file_get_contents($file), true);
-        self::seed($resources, (string) ($json['name'] ?? 'package'), dirname($file));
+        static::seed($resources, (string) ($json['name'] ?? 'package'), dirname($file));
     }
 
     /**
@@ -664,7 +664,7 @@ final class Resource
      * bootstrapper of their own.
      * @return void
      */
-    private static function seedInstalledPackages(): void
+    protected static function seedInstalledPackages(): void
     {
         $file = APP_PATH . DS . 'vendor' . DS . 'composer' . DS . 'installed.json';
 
@@ -687,7 +687,7 @@ final class Resource
 
             // install-path is relative to vendor/composer
             $base = $vendor . DS . ($package['install-path'] ?? '');
-            self::seed($resources, (string) ($package['name'] ?? 'package'), $base);
+            static::seed($resources, (string) ($package['name'] ?? 'package'), $base);
         }
     }
 
@@ -702,7 +702,7 @@ final class Resource
      * @return void
      * @throws ResourceException
      */
-    private static function seed(array $resources, string $source, ?string $base = null): void
+    protected static function seed(array $resources, string $source, ?string $base = null): void
     {
         $base ??= APP_PATH;
 
@@ -718,14 +718,14 @@ final class Resource
                     continue;
                 }
 
-                if (!self::isAbsolute($path)) {
+                if (!static::isAbsolute($path)) {
                     $path = $base . DS . $path;
                 }
 
-                self::define(new ResourceDefinition(
-                    self::normalizeName((string) $name),
-                    self::normalizePath($path),
-                    self::normalizeNamespace($declaration['namespace'] ?? null),
+                static::define(new ResourceDefinition(
+                    static::normalizeName((string) $name),
+                    static::normalizePath($path),
+                    static::normalizeNamespace($declaration['namespace'] ?? null),
                     $declaration['contract'] ?? null,
                     $source
                 ));
@@ -738,7 +738,7 @@ final class Resource
      * @param string $path
      * @return bool
      */
-    private static function isAbsolute(string $path): bool
+    protected static function isAbsolute(string $path): bool
     {
         return (bool) preg_match('#^(?:[a-zA-Z]:[\\\\/]|[\\\\/])#', $path);
     }

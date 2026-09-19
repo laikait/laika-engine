@@ -68,6 +68,21 @@ scripts.
    `public/`. `php laika app:sync` writes `public/.htaccess`, and
    `php laika nginx:server` emits a server block rooted at `public/`.
 
+## Extending
+
+- **Drivers:** `Cache::extend()`, `HandlerFactory::extend()` (sessions),
+  `Queue::extend()` / `Queue::extendFailed()`, `DriverFactory::extend()`
+  (database) and `MailManager::extendMailer()` / `extendReader()` register
+  backends by name.
+- **Macros:** `Model`, `Blueprint`, `Request`, `Response`, `Cache` and `Url` use
+  `Laika\Engine\Core\Support\Macroable`, so `Model::macro('active', fn () => ...)`
+  adds a method. Relays forward macros too.
+- **Subclassing:** framework classes are open and their steps are `protected`.
+  Security boundaries (`Route\Asset`, `ProxyTrust`, the Shield detectors and
+  rules), value objects and internal parts stay `final`, and say why.
+
+The framework docs cover each in detail, under "Extending the Framework".
+
 ## Package resources
 
 A package can declare the same resource from several directories by giving a

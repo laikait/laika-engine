@@ -55,16 +55,16 @@ use Laika\Engine\Shield\Rules\IpRule;
  *
  * @package Laika\Engine\Shield
  */
-final class Shield
+class Shield
 {
     /** @var RuleInterface[] */
-    private array $rules = [];
+    protected array $rules = [];
 
     /** @var bool $trustProxy */
-    private bool $trustProxy = false;
+    protected bool $trustProxy = false;
 
     /** @var string[] $trustedProxies */
-    private array $trustedProxies = [];
+    protected array $trustedProxies = [];
 
     // -------------------------------------------------------------------------
     // Static Bootstrap

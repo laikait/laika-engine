@@ -15,7 +15,7 @@ namespace Laika\Engine\Core\System;
 
 use RuntimeException;
 
-final class MemoryManager
+class MemoryManager
 {
     /** @var bool $monitorRegistered */
     private static bool $monitorRegistered = false;
@@ -99,7 +99,7 @@ final class MemoryManager
      * Detect CLI Context.
      * @return bool
      */
-    private function isCli(): bool
+    protected function isCli(): bool
     {
         return PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg';
     }
@@ -109,7 +109,7 @@ final class MemoryManager
      * @throws RuntimeException if target limit is less than or equal to current usage.
      * @return void
      */
-    private function setMemoryLimitSafely(string $target): void
+    protected function setMemoryLimitSafely(string $target): void
     {
         $currentLimit = ini_get('memory_limit');
 
@@ -142,7 +142,7 @@ final class MemoryManager
      * Convert Shorthand Memory Notation to Bytes.
      * @return int
      */
-    private function toBytes(string $value): int
+    protected function toBytes(string $value): int
     {
         $value = trim($value);
         $unit  = strtolower($value[strlen($value) - 1]);

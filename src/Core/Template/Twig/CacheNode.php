@@ -30,6 +30,8 @@ use Twig\Node\Node;
  * The body is captured with Twig's own CaptureNode, which works whether the
  * environment renders with echo or with yield. Captured output is already
  * escaped, so it is output as-is.
+ *
+ * Final on purpose: an internal part of the {% cache %} Twig tag, not an extension point.
  */
 #[YieldReady]
 final class CacheNode extends Node

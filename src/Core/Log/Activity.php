@@ -25,7 +25,7 @@ use Laika\Engine\Services\Visitor;
 use Laika\Engine\Core\Schema\ActivitySchema;
 use Laika\Engine\Core\Exceptions\LogException;
 
-final class Activity
+class Activity
 {
     /** @var array Author */
     protected array $author;
@@ -193,7 +193,7 @@ final class Activity
      * Reset
      * @return void
      */
-    private function reset(): void
+    protected function reset(): void
     {
         // Set Log
         $this->log = '';

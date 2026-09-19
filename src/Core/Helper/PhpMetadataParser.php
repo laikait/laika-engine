@@ -15,6 +15,9 @@ namespace Laika\Engine\Core\Helper;
 
 use InvalidArgumentException;
 
+/**
+ * Final on purpose: an internal part of resource discovery, not an extension point.
+ */
 final class PhpMetadataParser
 {
     /**

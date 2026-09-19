@@ -15,6 +15,8 @@ namespace Laika\Engine\Shield\Support;
  * Utility methods for IP address detection, validation, and version detection.
  *
  * @package Laika\Engine\Shield\Support
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class IpHelper
 {

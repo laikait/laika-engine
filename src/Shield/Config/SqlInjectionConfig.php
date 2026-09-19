@@ -21,14 +21,14 @@ namespace Laika\Engine\Shield\Config;
  *
  * @package Laika\Engine\Shield\Config
  */
-final class SqlInjectionConfig extends SectionConfig
+class SqlInjectionConfig extends SectionConfig
 {
     /** @var string[] */
-    private array $skipKeys = [];
+    protected array $skipKeys = [];
 
-    private bool $scanBody = true;
+    protected bool $scanBody = true;
 
-    private bool $strict = false;
+    protected bool $strict = false;
 
     /**
      * @param string[]|null $value

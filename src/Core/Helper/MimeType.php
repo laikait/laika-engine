@@ -13,10 +13,10 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Helper;
 
-final class MimeType
+class MimeType
 {
     /** @var array Mime Types */
-    private static array $types = [
+    protected static array $types = [
         // Text
         'html'  => 'text/html',
         'htm'   => 'text/html',

@@ -13,8 +13,12 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Http;
 
+use Laika\Engine\Core\Support\Macroable;
+
 class Response
 {
+    use Macroable;
+
     /** @var int Status Code */
     protected int $statusCode = 200;
 

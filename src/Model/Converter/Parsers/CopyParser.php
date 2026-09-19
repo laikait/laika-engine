@@ -21,6 +21,8 @@ use Laika\Engine\Model\Converter\Statement;
  * pg_dump writes table data as `COPY t (cols) FROM stdin;` followed by
  * tab-separated rows and a closing `\.` line, unless it was run with
  * --inserts. Without this the rows are not SQL at all and cannot be converted.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class CopyParser
 {

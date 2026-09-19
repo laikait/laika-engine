@@ -19,6 +19,8 @@ use Laika\Engine\Shield\Detectors\SqlInjectionDetector;
  * Scans query parameters, POST body, and raw input for SQL injection patterns.
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class SqlInjectionRule implements RuleInterface
 {

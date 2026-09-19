@@ -22,6 +22,8 @@ namespace Laika\Engine\Model\Converter;
  *
  * Unknown types return null; the caller carries them through verbatim and
  * records a warning rather than guessing.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class TypeLexicon
 {

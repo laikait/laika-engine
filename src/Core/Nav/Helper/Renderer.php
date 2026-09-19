@@ -19,7 +19,7 @@ namespace Laika\Engine\Core\Nav\Helper;
  * Item::svg() is Author-Supplied Markup and is Emitted Verbatim.
  * This is the Only Class in Nav That Emits Markup.
  */
-final class Renderer
+class Renderer
 {
     /** @var array<string,string|null> Renderer Defaults */
     public const DEFAULTS = [
@@ -39,16 +39,16 @@ final class Renderer
     ];
 
     /** @var array<string,string|null> */
-    private array $config;
+    protected array $config;
 
     /** @var string Host of the Install Base, Lowercased. Empty When Unknown. */
-    private string $baseHost = '';
+    protected string $baseHost = '';
 
     /** @var string Path of the Install Base (the Subdirectory). Empty When Unknown. */
-    private string $basePath = '';
+    protected string $basePath = '';
 
     /** @var string|null Current Request Path, Already Normalised */
-    private ?string $current;
+    protected ?string $current;
 
     /**
      * @param array<string,string|null> $config Overrides Merged Over DEFAULTS
@@ -103,7 +103,7 @@ final class Renderer
      * @param int $depth
      * @return string
      */
-    private function list(array $items, int $depth): string
+    protected function list(array $items, int $depth): string
     {
         if (empty($items)) {
             return '';
@@ -125,7 +125,7 @@ final class Renderer
      * @param int $depth
      * @return string
      */
-    private function item(Item $item, int $depth): string
+    protected function item(Item $item, int $depth): string
     {
         $active   = $this->isActive($item);
         $children = $item->getChildren();
@@ -180,7 +180,7 @@ final class Renderer
      * @param string[] $classes
      * @return string
      */
-    private function classAttribute(array $classes): string
+    protected function classAttribute(array $classes): string
     {
         $classes = array_filter($classes, static function (string $class): bool {
             return trim($class) !== '';
@@ -201,7 +201,7 @@ final class Renderer
      * @param array<string,string> $attributes
      * @return string
      */
-    private function attributes(array $attributes): string
+    protected function attributes(array $attributes): string
     {
         $html = '';
 
@@ -217,7 +217,7 @@ final class Renderer
      * @param Item $item
      * @return bool
      */
-    private function isActive(Item $item): bool
+    protected function isActive(Item $item): bool
     {
         // A Forced State Always Wins.
         if (($forced = $item->getActive()) !== null) {
@@ -249,7 +249,7 @@ final class Renderer
      * @param Item $item
      * @return bool
      */
-    private function hasActiveDescendant(Item $item): bool
+    protected function hasActiveDescendant(Item $item): bool
     {
         foreach ($item->getChildren() as $child) {
             if ($this->isActive($child) || $this->hasActiveDescendant($child)) {
@@ -269,7 +269,7 @@ final class Renderer
      * @param string $url
      * @return string
      */
-    private function normalise(string $url): string
+    protected function normalise(string $url): string
     {
         $host = parse_url($url, PHP_URL_HOST);
         $path = parse_url($url, PHP_URL_PATH);
@@ -304,7 +304,7 @@ final class Renderer
      * @param string $value
      * @return string
      */
-    private function esc(string $value): string
+    protected function esc(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }

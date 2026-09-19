@@ -30,7 +30,7 @@ defined('APP_PATH') || http_response_code(403) . die('403 Direct Access Denied!'
  * Records are addressed by uid in URLs rather than by the auto-increment key,
  * so a link never discloses how many clients or invoices exist.
  */
-final class Uid
+class Uid
 {
     /** @var int Length of the canonical 8-4-4-4-12 form */
     public const LENGTH = 36;
@@ -90,12 +90,12 @@ final class Uid
         // A list whose first element is itself an array is a batch of rows.
         // Anything else - an associative array, or a list of scalars - is one row.
         if (!array_is_list($rows) || !is_array(reset($rows))) {
-            return isset($rows['uid']) ? $rows : ['uid' => self::make()] + $rows;
+            return isset($rows['uid']) ? $rows : ['uid' => static::make()] + $rows;
         }
 
         foreach ($rows as $i => $row) {
             if (is_array($row) && !isset($row['uid'])) {
-                $rows[$i] = ['uid' => self::make()] + $row;
+                $rows[$i] = ['uid' => static::make()] + $row;
             }
         }
 

@@ -17,6 +17,9 @@ use DOMDocument;
 use Laika\Engine\Services\Response;
 use Laika\Engine\Services\CSRF;
 
+/**
+ * Final on purpose: an internal part of the router, not an extension point.
+ */
 final class Html
 {
     /** @var string CSRF Token */

@@ -15,9 +15,12 @@ namespace Laika\Engine\Core\Http;
 
 use Laika\Engine\Core\Contracts\SanitizerInterface;
 use Laika\Engine\Core\Sanitizer\InputSanitizer;
+use Laika\Engine\Core\Support\Macroable;
 
 class Request
 {
+    use Macroable;
+
     /** @var array $get */
     protected array $get;
 

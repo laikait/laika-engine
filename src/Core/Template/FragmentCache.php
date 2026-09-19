@@ -24,7 +24,7 @@ use Throwable;
  * need no instance, and never throw: a cache that fails renders the fragment
  * as if it were not cached, rather than failing the page.
  */
-final class FragmentCache
+class FragmentCache
 {
     /** @var string Key namespace, apart from query and response entries */
     private const PREFIX = 'fragment:';
@@ -72,7 +72,7 @@ final class FragmentCache
      */
     public static function put(string $key, string $html, mixed $ttl, int $issuedBefore): void
     {
-        if ($issuedBefore < 0 || self::issued() !== $issuedBefore) {
+        if ($issuedBefore < 0 || static::issued() !== $issuedBefore) {
             return;
         }
 

@@ -19,13 +19,13 @@ namespace Laika\Engine\Shield\Config;
  *
  * @package Laika\Engine\Shield\Config
  */
-final class RateLimitConfig extends SectionConfig
+class RateLimitConfig extends SectionConfig
 {
-    private int $maxHits = 60;
+    protected int $maxHits = 60;
 
-    private int $window = 60;
+    protected int $window = 60;
 
-    private ?string $storageDir = null;
+    protected ?string $storageDir = null;
 
     /**
      * @return static|int

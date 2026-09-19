@@ -18,6 +18,8 @@ namespace Laika\Engine\Core\App;
  *
  * Immutable description of *where* a resource type lives — never the files
  * themselves. Scanning is deferred to Resource::getResources().
+ *
+ * Final on purpose: an immutable value object.
  */
 final class ResourceDefinition
 {

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Model\Schema;
 
+use Laika\Engine\Core\Support\Macroable;
+
 /**
  * Blueprint – fluent table column/constraint builder.
  *
@@ -24,6 +26,8 @@ namespace Laika\Engine\Model\Schema;
  */
 class Blueprint
 {
+    use Macroable;
+
     private string $table;
     private array  $columns     = [];
     private array  $primaryKey  = [];

@@ -30,7 +30,7 @@ defined('APP_PATH') || http_response_code(403) . die('403 Direct Access Denied!'
  *
  * Path data from Bootstrap Icons (MIT).
  */
-final class Icon
+class Icon
 {
     /** @var string Rendered When a Name Is Not Recognised */
     public const FALLBACK = 'info';
@@ -129,7 +129,7 @@ final class Icon
      */
     public static function __callStatic(string $name, array $arguments): string
     {
-        return self::svg(strtolower($name), $arguments[0] ?? 16);
+        return static::svg(strtolower($name), $arguments[0] ?? 16);
     }
 
     /**
@@ -138,6 +138,6 @@ final class Icon
      */
     public function __call(string $name, array $arguments): string
     {
-        return self::svg(strtolower($name), $arguments[0] ?? 16);
+        return static::svg(strtolower($name), $arguments[0] ?? 16);
     }
 }

@@ -20,6 +20,8 @@ use Laika\Engine\Services\Request;
  *
  * Backs the `input` template variable, so {{ input.email }} reads a request
  * input by property and {{ input.tags(0) }} indexes an array one.
+ *
+ * Final on purpose: an internal part of the CLI, not an extension point.
  */
 final class InputHandler
 {

@@ -19,6 +19,8 @@ use Laika\Engine\Shield\Support\RequestHelper;
  * Scans query parameters, POST body, headers, and raw input for XSS patterns.
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class XssRule implements RuleInterface
 {
