@@ -56,7 +56,6 @@
             "helpers/loader.php"
         ],
         "psr-4": {
-            "Laika\\Engine\\Service\\": "services/",
             "Laika\\Engine\\": "src/"
         }
     },

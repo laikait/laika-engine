@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
-use Laika\Engine\Service\Cache;
+use Laika\Engine\Services\Cache;
 use Throwable;
 
 class CacheForgetCommand implements CommandInterface

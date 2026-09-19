@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
-use Laika\Engine\Service\Infra;
+use Laika\Engine\Services\Infra;
 use Laika\Engine\Core\Worker\Queue;
 use Laika\Engine\Queue\Abstracts\Job;
 

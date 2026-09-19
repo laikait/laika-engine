@@ -38,7 +38,6 @@
     <source>
         <include>
             <directory>src</directory>
-            <directory>services</directory>
         </include>
     </source>
 </phpunit>

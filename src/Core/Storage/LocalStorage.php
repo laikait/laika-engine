@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Storage;
 
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\Directory;
 use RuntimeException;
 
 /**

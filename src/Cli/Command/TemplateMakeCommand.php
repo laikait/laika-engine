@@ -6,7 +6,7 @@ namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
 use Laika\Engine\Cli\Stub;
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\Directory;
 
 class TemplateMakeCommand implements CommandInterface
 {

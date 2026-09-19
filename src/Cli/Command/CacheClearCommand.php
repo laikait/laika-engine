@@ -6,7 +6,7 @@ namespace Laika\Engine\Cli\Command;
 
 use FilesystemIterator;
 use Laika\Engine\Cli\Contracts\CommandInterface;
-use Laika\Engine\Service\Cache;
+use Laika\Engine\Services\Cache;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use Throwable;

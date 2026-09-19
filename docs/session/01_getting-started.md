@@ -53,7 +53,7 @@ The framework wraps driver selection in the `Init` service. Its method names mir
 
 ```php
 // lf-hooks/session.php
-use Laika\Engine\Service\Init;
+use Laika\Engine\Services\Init;
 
 Init::file(['path' => APP_PATH . '/lf-storage/sessions']);
 // or: Init::model('default'), Init::mysql('default'), Init::redis(), Init::memcached()

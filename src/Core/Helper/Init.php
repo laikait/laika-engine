@@ -15,8 +15,8 @@ namespace Laika\Engine\Core\Helper;
 
 use RuntimeException;
 use Throwable;
-use Laika\Engine\Service\Config;
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Config;
+use Laika\Engine\Services\Url;
 use Laika\Engine\Model\Connection;
 use Laika\Engine\Session\SessionConfig;
 use Laika\Engine\Core\Storage\Connection\RedisConnection;

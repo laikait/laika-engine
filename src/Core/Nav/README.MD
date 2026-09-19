@@ -20,7 +20,7 @@ Laika\Engine\Core\Nav\Helper\Renderer  — Turns a tree into HTML (all escaping 
 
 The Nav package ships as part of `laikait/laika-core`. No separate installation required.
 
-It is also bound in the relay registry as the `nav` singleton, so `Laika\Engine\Service\Nav` works out of the box — see [Using the Relay](#using-the-relay).
+It is also bound in the relay registry as the `nav` singleton, so `Laika\Engine\Services\Nav` works out of the box — see [Using the Relay](#using-the-relay).
 
 ---
 
@@ -161,7 +161,7 @@ echo $nav->render();   // during a request to /services/help
 </nav>
 ```
 
-The current URL comes from `Laika\Engine\Service\Url::current()`. Outside a request — CLI, PHPUnit — the relay registry is not set, so Nav degrades quietly and marks nothing active instead of throwing.
+The current URL comes from `Laika\Engine\Services\Url::current()`. Outside a request — CLI, PHPUnit — the relay registry is not set, so Nav degrades quietly and marks nothing active instead of throwing.
 
 **Override it** with `current()`:
 
@@ -296,10 +296,10 @@ $nav->configure([
 
 ## Using the Relay
 
-`nav` is registered as a **singleton**, so `Laika\Engine\Service\Nav` accumulates into one shared Builder for the whole request — which is what you want for a site-wide menu:
+`nav` is registered as a **singleton**, so `Laika\Engine\Services\Nav` accumulates into one shared Builder for the whole request — which is what you want for a site-wide menu:
 
 ```php
-use Laika\Engine\Service\Nav;
+use Laika\Engine\Services\Nav;
 
 Nav::add('Home', 'home');
 Nav::add('About', 'about');

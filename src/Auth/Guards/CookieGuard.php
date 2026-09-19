@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Auth\Guards;
 
-use Laika\Engine\Service\Cookie;
+use Laika\Engine\Services\Cookie;
 use Laika\Engine\Auth\Exceptions\AuthException;
 
 class CookieGuard

@@ -2,12 +2,12 @@
 
 ## Url
 
-**Relay:** `Laika\Engine\Service\Url` (`url`). **Class:** `Laika\Engine\Core\Helper\Url`.
+**Relay:** `Laika\Engine\Services\Url` (`url`). **Class:** `Laika\Engine\Core\Helper\Url`.
 
 Built once per request from `$_SERVER`. It works out the scheme, host, port and the sub-directory the app is installed in, so links stay correct behind proxies and in sub-folder installs.
 
 ```php
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Url;
 
 Url::base();                         // https://example.com/shop/
 Url::build('orders', ['page' => 2]); // https://example.com/shop/orders?page=2
@@ -56,7 +56,7 @@ Every candidate is validated before use, since the Host header is client-control
 
 ## Page
 
-**Relay:** `Laika\Engine\Service\Page` (`page`). **Class:** `Laika\Engine\Core\Helper\Page`.
+**Relay:** `Laika\Engine\Services\Page` (`page`). **Class:** `Laika\Engine\Core\Helper\Page`.
 
 Pagination helpers built on the `?page=` query value.
 
@@ -70,7 +70,7 @@ Pagination helpers built on the `?page=` query value.
 
 ## Visitor (Client)
 
-**Relay:** `Laika\Engine\Service\Visitor` (`visitor`). **Class:** `Laika\Engine\Core\Helper\Client`.
+**Relay:** `Laika\Engine\Services\Visitor` (`visitor`). **Class:** `Laika\Engine\Core\Helper\Client`.
 
 Information about the client making the request.
 
@@ -92,10 +92,10 @@ Information about the client making the request.
 
 ## Cookie
 
-**Relay:** `Laika\Engine\Service\Cookie` (`cookie`). **Class:** `Laika\Engine\Core\Helper\Cookie`.
+**Relay:** `Laika\Engine\Services\Cookie` (`cookie`). **Class:** `Laika\Engine\Core\Helper\Cookie`.
 
 ```php
-use Laika\Engine\Service\Cookie;
+use Laika\Engine\Services\Cookie;
 
 Cookie::set('theme', 'dark');                        // 7 days, httponly, SameSite=Strict
 Cookie::ttl(3600)->path('/admin')->set('tab', 'users');
@@ -127,12 +127,12 @@ Behaviour to know:
 
 ## IP Utilities
 
-**Relay:** `Laika\Engine\Service\IP` (`ip`). **Classes:** `Laika\Engine\Core\IP\IP`, `Laika\Engine\Core\IP\Version\IPv4`, `Laika\Engine\Core\IP\Version\IPv6`.
+**Relay:** `Laika\Engine\Services\IP` (`ip`). **Classes:** `Laika\Engine\Core\IP\IP`, `Laika\Engine\Core\IP\Version\IPv4`, `Laika\Engine\Core\IP\Version\IPv6`.
 
 CIDR maths for both address families.
 
 ```php
-use Laika\Engine\Service\IP;
+use Laika\Engine\Services\IP;
 
 $net = IP::parse('192.168.10.0/24');   // IPv4 instance
 $net->getBroadcastAddress();           // 192.168.10.255

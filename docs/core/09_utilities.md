@@ -2,12 +2,12 @@
 
 ## Date
 
-**Relay:** `Laika\Engine\Service\Date` (`date`). **Class:** `Laika\Engine\Core\Helper\Date`.
+**Relay:** `Laika\Engine\Services\Date` (`date`). **Class:** `Laika\Engine\Core\Helper\Date`.
 
 An immutable wrapper around `DateTime`. Every method that changes the date returns a **new** instance, so the shared relay instance is never modified.
 
 ```php
-use Laika\Engine\Service\Date;
+use Laika\Engine\Services\Date;
 
 Date::now()->format('d M Y');                    // "14 Sep 2026"
 Date::parse('next Monday')->format('l');         // "Monday"
@@ -42,19 +42,19 @@ The relay instance is created in UTC. At boot, `CoreProviders` calls `Date::setA
 
 ```php
 // lf-hooks/timezone.php
-use Laika\Engine\Service\Date;
+use Laika\Engine\Services\Date;
 
 Date::setAppTimezone(config('app', 'timezone', 'UTC'));
 ```
 
 ## Math
 
-**Relay:** `Laika\Engine\Service\Math` (`math`). **Class:** `Laika\Engine\Core\Helper\Math`. Requires `ext-bcmath`.
+**Relay:** `Laika\Engine\Services\Math` (`math`). **Class:** `Laika\Engine\Core\Helper\Math`. Requires `ext-bcmath`.
 
 Arbitrary-precision arithmetic on strings, for money and anything else floats get wrong.
 
 ```php
-use Laika\Engine\Service\Math;
+use Laika\Engine\Services\Math;
 
 Math::add('0.1', '0.2');                  // "0.3000" (default scale 4)
 Math::scale(2)->mul('19.99', 3);          // "59.97"
@@ -152,7 +152,7 @@ These classes use `proc_open()` and `exec()`, which hardened PHP-FPM pools often
 
 ## PhpMetadataParser
 
-**Relay:** `Laika\Engine\Service\PhpMetadataParser` (`php.metadata.parser`). **Class:** `Laika\Engine\Core\Helper\PhpMetadataParser` (static).
+**Relay:** `Laika\Engine\Services\PhpMetadataParser` (`php.metadata.parser`). **Class:** `Laika\Engine\Core\Helper\PhpMetadataParser` (static).
 
 `parse(string $file): array` reads `Key: Value` lines from the first docblock of a PHP file. It's used to describe modules and themes:
 

@@ -11,10 +11,10 @@ Since 5.1.0 these schemas are **not** discovered by `php laika app:migrate`. Eac
 
 ## Options
 
-**Relay:** `Laika\Engine\Service\Option` (`option`). **Class:** `Laika\Engine\Core\Model\OptionModel`. **Helpers:** `option()`, `option_bool()`, `option_int()`, `option_array()`, `option_insert()`, `option_update()`.
+**Relay:** `Laika\Engine\Services\Option` (`option`). **Class:** `Laika\Engine\Core\Model\OptionModel`. **Helpers:** `option()`, `option_bool()`, `option_int()`, `option_array()`, `option_insert()`, `option_update()`.
 
 ```php
-use Laika\Engine\Service\Option;
+use Laika\Engine\Services\Option;
 
 Option::single('app_name');                 // "Laika Framework" (seeded default)
 Option::insert('maintenance', false);       // stored as "false"
@@ -58,12 +58,12 @@ In `DEBUG` mode, install, insert and update failures throw `OptionException`. In
 
 ## Activity Log
 
-**Relay:** `Laika\Engine\Service\Activity` (`activity`). **Class:** `Laika\Engine\Core\Log\Activity`.
+**Relay:** `Laika\Engine\Services\Activity` (`activity`). **Class:** `Laika\Engine\Core\Log\Activity`.
 
 Record events during a request. laika-route writes them all at the end of the request by calling `Activity::insert()`.
 
 ```php
-use Laika\Engine\Service\Activity;
+use Laika\Engine\Services\Activity;
 
 $changes = Activity::changelog($invoiceBefore);            // compares against the request inputs
 

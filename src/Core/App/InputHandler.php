@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\App;
 
-use Laika\Engine\Service\Request;
+use Laika\Engine\Services\Request;
 
 /**
  * Template Input Handler

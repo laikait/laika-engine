@@ -65,7 +65,7 @@ There are three independent pieces:
 ## File Structure & Default Services
 
 ```
-services/       # NAMESPACE: Laika\Engine\Service
+services/       # NAMESPACE: Laika\Engine\Services
 └── Template/
     ├── Asset.php                       # HTML Template Asset Relay Class Container
     ├── Meta.php                        # HTML Template Meta Relay Class Container
@@ -112,7 +112,7 @@ src/            # NAMESPACE: Laika\Engine\Relay
 └── README.MD                # Manages provider loading and booting
 ```
 
-> `services/` [`Laika\Engine\Service\*`] is a convention, not a requirement. Relay classes can live anywhere.
+> `services/` [`Laika\Engine\Services\*`] is a convention, not a requirement. Relay classes can live anywhere.
 
 ---
 
@@ -603,9 +603,9 @@ Import the **Relay class**, not the underlying service class.
 
 ```php
 // ✅ Correct — imports the Relay proxy
-use Laika\Engine\Service\StaffAuth;
-use Laika\Engine\Service\ClientAuth;
-use Laika\Engine\Service\Config;
+use Laika\Engine\Services\StaffAuth;
+use Laika\Engine\Services\ClientAuth;
+use Laika\Engine\Services\Config;
 ...
 
 if (Auth::check()) {
@@ -666,7 +666,7 @@ Use `swap()` to replace the resolved instance for a specific Relay — for examp
 namespace App\Middleware;
 
 use Laika\Engine\Core\Auth\Auth as AuthService;
-use Laika\Engine\Service\Auth;
+use Laika\Engine\Services\Auth;
 
 class AdminMiddleware
 {
@@ -692,7 +692,7 @@ Relay::getRegistry()->singleton('auth', AuthService::class, ['admin', 'admins'])
 ### Inject a mock for one test
 
 ```php
-use Laika\Engine\Service\Auth;
+use Laika\Engine\Services\Auth;
 
 protected function setUp(): void
 {

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Auth\Guards;
 
 use Laika\Engine\Model\Model;
-use Laika\Engine\Service\Visitor;
+use Laika\Engine\Services\Visitor;
 use Laika\Engine\Auth\Model\AuthModel;
 use Laika\Engine\Auth\Schema\AuthSchema;
 use Laika\Engine\Auth\Exceptions\AuthException;

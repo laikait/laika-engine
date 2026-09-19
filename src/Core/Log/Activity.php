@@ -20,8 +20,8 @@ defined('APP_PATH') || http_response_code(403) . die('403 Direct Access Denied!'
 
 use Laika\Engine\Model\Model;
 use Laika\Engine\Model\Connection;
-use Laika\Engine\Service\Request;
-use Laika\Engine\Service\Visitor;
+use Laika\Engine\Services\Request;
+use Laika\Engine\Services\Visitor;
 use Laika\Engine\Core\Schema\ActivitySchema;
 use Laika\Engine\Core\Exceptions\LogException;
 

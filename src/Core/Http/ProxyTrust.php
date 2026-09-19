@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Http;
 
-use Laika\Engine\Service\Config;
+use Laika\Engine\Services\Config;
 use Laika\Engine\Shield\Support\IpHelper;
 use Throwable;
 

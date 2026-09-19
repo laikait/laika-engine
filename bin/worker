@@ -9,7 +9,7 @@ use Laika\Engine\Queue\Driver\RedisDriver;
 use Laika\Engine\Queue\Driver\JsonDriver;
 use Laika\Engine\Queue\Driver\JsonFailedJobProvider;
 use Laika\Engine\Model\Connection;
-use Laika\Engine\Service\Infra;
+use Laika\Engine\Services\Infra;
 
 /**
  * Resolve APP_PATH (the Laika project root).

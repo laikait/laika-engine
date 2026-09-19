@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Template;
 
-use Laika\Engine\Service\Url;
-use Laika\Engine\Service\CSRF;
-use Laika\Engine\Service\Response;
+use Laika\Engine\Services\Url;
+use Laika\Engine\Services\CSRF;
+use Laika\Engine\Services\Response;
 
 class Asset
 {

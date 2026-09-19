@@ -2,7 +2,7 @@
 
 ## File
 
-**Relay:** `Laika\Engine\Service\File` (`file`). **Class:** `Laika\Engine\Core\Helper\File`.
+**Relay:** `Laika\Engine\Services\File` (`file`). **Class:** `Laika\Engine\Core\Helper\File`.
 
 | Method | Returns / does |
 |---|---|
@@ -25,7 +25,7 @@
 
 ## Directory
 
-**Relay:** `Laika\Engine\Service\Directory` (`directory`). **Class:** `Laika\Engine\Core\Helper\Directory`.
+**Relay:** `Laika\Engine\Services\Directory` (`directory`). **Class:** `Laika\Engine\Core\Helper\Directory`.
 
 | Method | Returns / does |
 |---|---|
@@ -41,10 +41,10 @@ Extension filters ignore case and a leading dot. Invalid paths throw `RuntimeExc
 
 ## Upload
 
-**Relay:** `Laika\Engine\Service\Upload` (`upload`, a new instance per use). **Class:** `Laika\Engine\Core\Helper\Upload`.
+**Relay:** `Laika\Engine\Services\Upload` (`upload`, a new instance per use). **Class:** `Laika\Engine\Core\Helper\Upload`.
 
 ```php
-use Laika\Engine\Service\Upload;
+use Laika\Engine\Services\Upload;
 
 $path = Upload::init($_FILES['avatar'])->single(APP_PATH . '/uploads/avatars', 'user-42', [
     'maxsize'      => 2 * 1024 * 1024,
@@ -78,10 +78,10 @@ Checks that always apply:
 
 ## Image
 
-**Relay:** `Laika\Engine\Service\Image` (`image`, a new instance per use). **Class:** `Laika\Engine\Core\Helper\Image`. Requires GD.
+**Relay:** `Laika\Engine\Services\Image` (`image`, a new instance per use). **Class:** `Laika\Engine\Core\Helper\Image`. Requires GD.
 
 ```php
-use Laika\Engine\Service\Image;
+use Laika\Engine\Services\Image;
 
 Image::path($upload)->thumbnail(300, 300, 'cover')->convertTo('webp')->save($thumb, 80);
 ```
@@ -129,7 +129,7 @@ Problems throw `PathException`. A missing extension throws `ExtensionException`.
 
 ## MimeType
 
-**Relay:** `Laika\Engine\Service\MimeType` (`mime`). **Class:** `Laika\Engine\Core\Helper\MimeType` (static).
+**Relay:** `Laika\Engine\Services\MimeType` (`mime`). **Class:** `Laika\Engine\Core\Helper\MimeType` (static).
 
 | Method | Returns |
 |---|---|

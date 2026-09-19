@@ -10,7 +10,7 @@ The service container and static-proxy layer of the [Laika PHP MVC Framework](ht
 | `Laika\Engine\Relay\ProviderRegistry` | Runs providers in two phases: every `register()`, then every `boot()` |
 | `Laika\Engine\Relay\CoreProviders` | The provider that binds laika-core's services (requires laika-core) |
 
-The package also ships the framework's own relays in `services/`, namespace `Laika\Engine\Service`: `Config`, `Request`, `Response`, `Url`, `Vault`, `Visitor` and the rest.
+The package also ships the framework's own relays in `services/`, namespace `Laika\Engine\Services`: `Config`, `Request`, `Response`, `Url`, `Vault`, `Visitor` and the rest.
 
 Requires PHP 8.1+.
 
@@ -314,7 +314,7 @@ Import the relay, not the class behind it:
 
 ```php
 use App\Service\Billing;
-use Laika\Engine\Service\Config;
+use Laika\Engine\Services\Config;
 
 $total = Billing::total($cart);
 $name  = Config::get('app', 'name');
@@ -325,7 +325,7 @@ Calling a method the instance doesn't have throws `RelayException`.
 **Chaining** works whenever the target returns an object: the first call goes through the relay, the rest run on the returned object.
 
 ```php
-use Laika\Engine\Service\Date;
+use Laika\Engine\Services\Date;
 
 Date::now()->setTimezone('Asia/Dhaka')->modify('+7 days')->format('d M Y');
 ```

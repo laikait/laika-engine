@@ -19,7 +19,7 @@ use Twig\Extension\DebugExtension;
 use Twig\Loader\FilesystemLoader as Engine;
 use Laika\Engine\Core\Exceptions\PathException;
 use Laika\Engine\Core\Template\Twig\CacheTokenParser;
-use Laika\Engine\Service\{Directory, Visitor, Request, Local, File, Page, Url, Context};
+use Laika\Engine\Services\{Directory, Visitor, Request, Local, File, Page, Url, Context};
 
 class Template
 {

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Nav;
 
 use Throwable;
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Url;
 use Laika\Engine\Core\Nav\Helper\{Node, Item, Renderer};
 
 class Builder extends Node

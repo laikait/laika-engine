@@ -138,7 +138,7 @@ class Model
         }
 
         // Init DB for Connection
-        // if (class_exists("\\Laika\\Engine\\Service\\Init")) \Laika\Engine\Service\Init::db($this->connection);
+        // if (class_exists("\\Laika\\Engine\\Services\\Init")) \Laika\Engine\Services\Init::db($this->connection);
 
         // Remember what the subclass declared so reset() can restore it.
         $this->softDeleteDefault = $this->softDelete;

@@ -83,7 +83,7 @@ Controllers use the relays directly:
 namespace App\Controller;
 
 use Laika\Engine\Core\App\Template;
-use Laika\Engine\Service\{Request, Redirect};
+use Laika\Engine\Services\{Request, Redirect};
 
 class ContactController
 {

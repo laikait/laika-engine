@@ -6,9 +6,9 @@ namespace Laika\Engine\Route\Tests\Unit;
 
 use Laika\Engine\Route\Asset;
 use Laika\Engine\Route\Dispatcher;
-use Laika\Engine\Service\Config;
-use Laika\Engine\Service\CORS;
-use Laika\Engine\Service\MimeType;
+use Laika\Engine\Services\Config;
+use Laika\Engine\Services\CORS;
+use Laika\Engine\Services\MimeType;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
 

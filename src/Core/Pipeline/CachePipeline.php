@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Pipeline;
 
 use Laika\Engine\Route\Contracts\PipelineInterface;
-use Laika\Engine\Service\CSRF;
-use Laika\Engine\Service\Cache;
-use Laika\Engine\Service\Response;
+use Laika\Engine\Services\CSRF;
+use Laika\Engine\Services\Cache;
+use Laika\Engine\Services\Response;
 use Throwable;
 
 /**

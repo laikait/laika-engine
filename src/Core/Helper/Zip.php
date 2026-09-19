@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Helper;
 
 use ZipArchive;
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\Directory;
 use Laika\Engine\Core\Exceptions\{ExtensionException, PathException};
 
 class Zip

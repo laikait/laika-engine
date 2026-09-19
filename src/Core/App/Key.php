@@ -13,8 +13,8 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\App;
 
-use Laika\Engine\Service\File;
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\File;
+use Laika\Engine\Services\Directory;
 use Laika\Engine\Core\Exceptions\AppKeyException;
 
 // Application Key

@@ -6,7 +6,7 @@ namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
 use Throwable;
-use Laika\Engine\Service\Resource;
+use Laika\Engine\Services\Resource;
 
 class AppCacheCommand implements CommandInterface
 {

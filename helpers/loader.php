@@ -122,7 +122,7 @@ try {
 
 if (!empty($queryCache['enabled'])) {
     \Laika\Engine\Model\Model::setQueryCache(
-        static fn (): object => \Laika\Engine\Service\Cache::driver(),
+        static fn (): object => \Laika\Engine\Services\Cache::driver(),
         (int) ($queryCache['ttl'] ?? 60)
     );
 }

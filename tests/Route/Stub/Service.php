@@ -1,14 +1,14 @@
 <?php
 /**
- * Test doubles for the Laika\Engine\Service relays.
+ * Test doubles for the Laika\Engine\Services relays.
  *
- * The route suite stubs Laika\Engine\Service\{Config,MimeType} so Asset can be
+ * The route suite stubs Laika\Engine\Services\{Config,MimeType} so Asset can be
  * tested against a fixture config and mime table rather than the real relays.
  */
 
 declare(strict_types=1);
 
-namespace Laika\Engine\Service;
+namespace Laika\Engine\Services;
 
 use RuntimeException;
 

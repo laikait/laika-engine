@@ -18,7 +18,7 @@ namespace Laika\Engine\Core\Schema;
 // Deny Direct Access
 defined('APP_PATH') || http_response_code(403) . die('403 Direct Access Denied!');
 
-use Laika\Engine\Service\Option;
+use Laika\Engine\Services\Option;
 use Laika\Engine\Model\Schema\Schema;
 use Laika\Engine\Model\Schema\Blueprint;
 use Laika\Engine\Model\Contract\SchemaAbstract;

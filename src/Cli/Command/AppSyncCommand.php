@@ -6,11 +6,11 @@ namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
 use Laika\Engine\Cli\Stub;
-use Laika\Engine\Service\File;
-use Laika\Engine\Service\Infra;
-use Laika\Engine\Service\AppKey;
-use Laika\Engine\Service\Directory;
-use Laika\Engine\Service\Resource;
+use Laika\Engine\Services\File;
+use Laika\Engine\Services\Infra;
+use Laika\Engine\Services\AppKey;
+use Laika\Engine\Services\Directory;
+use Laika\Engine\Services\Resource;
 
 class AppSyncCommand implements CommandInterface
 {

@@ -15,7 +15,7 @@ laika-core requires it, so a Laika app already has it. The package itself needs 
 In a Laika app, through the relay:
 
 ```php
-use Laika\Engine\Service\Cache;
+use Laika\Engine\Services\Cache;
 
 Cache::set('stats', $stats, 600);
 $stats = Cache::get('stats');

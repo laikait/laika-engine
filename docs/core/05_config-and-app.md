@@ -4,12 +4,12 @@
 
 ## Config
 
-**Relay:** `Laika\Engine\Service\Config` (`config`). **Class:** `Laika\Engine\Core\Helper\Config` (static). **Helper:** `config()`.
+**Relay:** `Laika\Engine\Services\Config` (`config`). **Class:** `Laika\Engine\Core\Helper\Config` (static). **Helper:** `config()`.
 
 Every `lf-config/*.php` file returns an array. `providers.php` is the exception and is skipped. All files are loaded together on first use and cached for the rest of the process.
 
 ```php
-use Laika\Engine\Service\Config;
+use Laika\Engine\Services\Config;
 
 Config::get('app', 'name', 'My App');     // one key
 Config::get('database', 'default');       // one connection's array
@@ -32,7 +32,7 @@ File names and keys are lowercased, so `APP_NAME` and `app_name` are the same ke
 
 ## Init
 
-**Relay:** `Laika\Engine\Service\Init` (`init`). **Class:** `Laika\Engine\Core\Helper\Init`.
+**Relay:** `Laika\Engine\Services\Init` (`init`). **Class:** `Laika\Engine\Core\Helper\Init`.
 
 Connects framework services to their `lf-config` files.
 
@@ -49,14 +49,14 @@ The session methods mirror `Laika\Engine\Session\SessionConfig`. See the [laika-
 
 ```php
 // lf-hooks/session.php
-use Laika\Engine\Service\Init;
+use Laika\Engine\Services\Init;
 
 Init::file(['path' => APP_PATH . '/lf-storage/sessions']);
 ```
 
 ## App Key
 
-**Relay:** `Laika\Engine\Service\AppKey` (`app.key`). **Class:** `Laika\Engine\Core\App\Key`.
+**Relay:** `Laika\Engine\Services\AppKey` (`app.key`). **Class:** `Laika\Engine\Core\App\Key`.
 
 The application secret, stored in `lf-storage/keys/app.key` with mode `0600`. [Vault](07_security.md#vault), [Token](07_security.md#token-jwt) and [CSRF](03_http.md#csrf) derive their keys from it.
 
@@ -73,7 +73,7 @@ From the command line, use `php laika secret:generate` and `php laika secret:fix
 
 ## Local (Localisation)
 
-**Relay:** `Laika\Engine\Service\Local` (`local`). **Class:** `Laika\Engine\Core\Helper\Local`. **Helper:** `local()`.
+**Relay:** `Laika\Engine\Services\Local` (`local`). **Class:** `Laika\Engine\Core\Helper\Local`. **Helper:** `local()`.
 
 Translations are static properties of a `LANG` class, one file per language: `lf-lang/{lang}.local.php`.
 
@@ -89,7 +89,7 @@ Nothing loads a language automatically. Choose and load one in a hook file:
 
 ```php
 // lf-hooks/lang.php
-use Laika\Engine\Service\Local;
+use Laika\Engine\Services\Local;
 
 Local::set('en');
 Local::load();
@@ -108,12 +108,12 @@ The file is loaded with `require_once` and defines a global class, so one reques
 
 ## Hook
 
-**Relay:** `Laika\Engine\Service\Hook` (`hook`). **Class:** `Laika\Engine\Core\Helper\Hook` (static). **Helpers:** `add_hook()`, `do_hook()`, `apply_hook()`.
+**Relay:** `Laika\Engine\Services\Hook` (`hook`). **Class:** `Laika\Engine\Core\Helper\Hook` (static). **Helpers:** `add_hook()`, `do_hook()`, `apply_hook()`.
 
 Named extension points for actions and filters.
 
 ```php
-use Laika\Engine\Service\Hook;
+use Laika\Engine\Services\Hook;
 
 Hook::add('order.placed', fn (array $order) => notify_team($order));
 Hook::do('order.placed', $order);                    // action: run every callback
@@ -132,7 +132,7 @@ Lower priorities run first; callbacks with equal priority run in registration or
 
 ## Resources
 
-**Relay:** `Laika\Engine\Service\Resource` (`resource`). **Class:** `Laika\Engine\Core\App\Resource` (static).
+**Relay:** `Laika\Engine\Services\Resource` (`resource`). **Class:** `Laika\Engine\Core\App\Resource` (static).
 
 A **resource** is a named set of directories, such as `controllers`, `models`, `routes` or `hooks`. There are two kinds:
 - **Class-map resources** have a namespace, and resolve each PHP file to a class name. They can require a contract (an interface or base class).
@@ -190,7 +190,7 @@ Names match `[a-z][a-z0-9_]*`, ignoring case. `controller` is accepted as an ali
 
 ## Infra
 
-**Relay:** `Laika\Engine\Service\Infra` (`infra`). **Class:** `Laika\Engine\Core\App\Infra`.
+**Relay:** `Laika\Engine\Services\Infra` (`infra`). **Class:** `Laika\Engine\Core\App\Infra`.
 
 Shortcuts over [Resources](#resources), used by the CLI and the router.
 

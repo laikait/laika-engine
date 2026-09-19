@@ -18,7 +18,7 @@ Everything lives under the `Laika\Engine\` namespace.
 | Core      | `Laika\Engine\Core`        | `laikait/laika-core`    | [docs/core](docs/core)       |
 | Route     | `Laika\Engine\Route`       | `laikait/laika-route`   | [docs/route](docs/route)     |
 | Relay     | `Laika\Engine\Relay`       | `laikait/laika-relay`   | [docs/relay](docs/relay)     |
-| Service   | `Laika\Engine\Service`     | `laikait/laika-relay` (services) | [docs/relay](docs/relay) |
+| Services  | `Laika\Engine\Services`    | `laikait/laika-relay` (services) | [docs/relay](docs/relay) |
 | Model     | `Laika\Engine\Model`       | `laikait/laika-model`   | [docs/model](docs/model)     |
 | Session   | `Laika\Engine\Session`     | `laikait/laika-session` | [docs/session](docs/session) |
 | Auth      | `Laika\Engine\Auth`        | `laikait/laika-auth`    | [docs/auth](docs/auth)       |

@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Helper;
 
 use RuntimeException;
-use Laika\Engine\Service\AppKey;
+use Laika\Engine\Services\AppKey;
 use Laika\Engine\Core\Exceptions\ConfigException;
 use Laika\Engine\Core\Exceptions\ExtensionException;
 

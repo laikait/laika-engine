@@ -2,12 +2,12 @@
 
 ## Vault
 
-**Relay:** `Laika\Engine\Service\Vault` (`vault`). **Class:** `Laika\Engine\Core\Helper\Vault`.
+**Relay:** `Laika\Engine\Services\Vault` (`vault`). **Class:** `Laika\Engine\Core\Helper\Vault`.
 
 Encryption, keyed hashing, password hashing, signing and random tokens. Requires `ext-openssl`.
 
 ```php
-use Laika\Engine\Service\Vault;
+use Laika\Engine\Services\Vault;
 
 $secret = Vault::encrypt('card-ending-4242');
 Vault::decrypt($secret);                       // 'card-ending-4242'
@@ -43,12 +43,12 @@ The ciphertext records which cipher made it, so `decrypt()` handles any supporte
 
 ## Token (JWT)
 
-**Relay:** `Laika\Engine\Service\Token` (`token`). **Class:** `Laika\Engine\Core\Generator\Token`.
+**Relay:** `Laika\Engine\Services\Token` (`token`). **Class:** `Laika\Engine\Core\Generator\Token`.
 
 Stateless tokens that carry a user payload.
 
 ```php
-use Laika\Engine\Service\Token;
+use Laika\Engine\Services\Token;
 
 $token = Token::generate(['id' => 7, 'role' => 'staff']);
 
@@ -75,7 +75,7 @@ For revocable, database-backed API tokens, see the token guard in [laika-auth](h
 
 ## Uid
 
-**Relay:** `Laika\Engine\Service\Uid` (`uid`). **Class:** `Laika\Engine\Core\Generator\Uid` (static).
+**Relay:** `Laika\Engine\Services\Uid` (`uid`). **Class:** `Laika\Engine\Core\Generator\Uid` (static).
 
 RFC 4122 version 4 UUIDs, valid on every database driver laika-model supports.
 
@@ -98,12 +98,12 @@ Uid::stamp([['name' => 'A'], ['name' => 'B']]); // adds a 'uid' to each row lack
 
 ## Unique
 
-**Relay:** `Laika\Engine\Service\Unique` (`unique`). **Class:** `Laika\Engine\Core\Generator\Unique`.
+**Relay:** `Laika\Engine\Services\Unique` (`unique`). **Class:** `Laika\Engine\Core\Generator\Unique`.
 
 Readable reference numbers built from date tokens and random characters.
 
 ```php
-use Laika\Engine\Service\Unique;
+use Laika\Engine\Services\Unique;
 
 Unique::generate('{y}{d}{c}{c}{c}{n}{n}', 'INV-');   // e.g. "INV-2615k3b07"
 ```
@@ -131,7 +131,7 @@ Input sanitizers belong to the request cycle. They're covered in [HTTP → Sanit
 
 ## Regex
 
-**Relay:** `Laika\Engine\Service\Regex` (`regex`). **Class:** `Laika\Engine\Core\Regex\Regex`.
+**Relay:** `Laika\Engine\Services\Regex` (`regex`). **Class:** `Laika\Engine\Core\Regex\Regex`.
 
 Named, reusable regex rules. The constructor registers every rule class in `src/Regex/Rules`. A rule's name is its class name without `Rule`, lowercased.
 
@@ -144,7 +144,7 @@ Named, reusable regex rules. The constructor registers every rule class in `src/
 | `password` | Configurable strength: `min`, `upper`, `lower`, `numeric`, `special`, `specialChars` |
 
 ```php
-use Laika\Engine\Service\Regex;
+use Laika\Engine\Services\Regex;
 
 Regex::validate('email', $input);                 // bool
 Regex::validate('minimum', $password, 12);        // extra arguments build a configured rule

@@ -6,7 +6,7 @@ namespace Laika\Engine\Core\Tests\Unit;
 
 use Laika\Engine\Route\Url;
 use Laika\Engine\Route\Handler;
-use Laika\Engine\Service\Date;
+use Laika\Engine\Services\Date;
 use PHPUnit\Framework\TestCase;
 
 final class DemoTest extends TestCase

@@ -19,9 +19,9 @@ use Laika\Engine\Core\Model\OptionModel;
 use Laika\Engine\Model\Log;
 use Laika\Engine\Route\Asset;
 use Laika\Engine\Route\Dispatcher;
-use Laika\Engine\Service\Cache;
-use Laika\Engine\Service\Request;
-use Laika\Engine\Service\Visitor;
+use Laika\Engine\Services\Cache;
+use Laika\Engine\Services\Request;
+use Laika\Engine\Services\Visitor;
 use Laika\Engine\Shield\Support\RequestHelper;
 use Throwable;
 

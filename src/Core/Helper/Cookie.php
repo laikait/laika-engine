@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Helper;
 
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Url;
 use InvalidArgumentException;
 
 class Cookie
