@@ -23,15 +23,15 @@ namespace Laika\Engine\Shield\Config;
  *
  * @package Laika\Engine\Shield\Config
  */
-final class CountryConfig extends SectionConfig
+class CountryConfig extends SectionConfig
 {
-    private string $db = '';
+    protected string $db = '';
 
     /** @var string[] */
-    private array $blocklist = [];
+    protected array $blocklist = [];
 
     /** @var string[] */
-    private array $allowlist = [];
+    protected array $allowlist = [];
 
     /**
      * @return static|string

@@ -26,6 +26,8 @@ use Laika\Engine\Model\Schema\Blueprint;
  * Deliberately not a full SQL grammar: it reads what dumps actually contain —
  * a column list with inline constraints and a tail of table options — and
  * reports anything it does not recognise rather than guessing.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class CreateTableParser
 {

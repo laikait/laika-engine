@@ -59,7 +59,7 @@ use Laika\Engine\Model\Schema\Grammars\SqlSrvGrammar;
  *
  *   print_r($converter->report()->warnings());
  */
-final class Converter
+class Converter
 {
     /** @var array<string,class-string<Grammar>> Canonical driver => grammar. */
     private const GRAMMARS = [
@@ -164,7 +164,7 @@ final class Converter
      */
     public static function between(string $fromConnection, string $toConnection, bool $strict = false): self
     {
-        $converter = new self(Connection::driver($fromConnection), Connection::driver($toConnection), $strict);
+        $converter = new static(Connection::driver($fromConnection), Connection::driver($toConnection), $strict);
 
         $converter->fromConnection = $fromConnection;
         $converter->toConnection   = $toConnection;
@@ -397,7 +397,7 @@ final class Converter
     /**
      * @return \Generator<int,string>
      */
-    private function convertStatement(Statement $statement): \Generator
+    protected function convertStatement(Statement $statement): \Generator
     {
         // `sqlite3 .dump` emits DELETE FROM sqlite_sequence and an INSERT per
         // AUTOINCREMENT table. That table is a SQLite internal that no other
@@ -509,7 +509,7 @@ final class Converter
     }
 
     /** @return \Generator<int,string> */
-    private function convertCreateTable(Statement $statement): \Generator
+    protected function convertCreateTable(Statement $statement): \Generator
     {
         $blueprint = $this->createTableParser->parse($statement);
 
@@ -527,7 +527,7 @@ final class Converter
     }
 
     /** @return \Generator<int,string> */
-    private function convertCreateIndex(Statement $statement): \Generator
+    protected function convertCreateIndex(Statement $statement): \Generator
     {
         $index = $this->indexParser->parse($statement);
 
@@ -571,7 +571,7 @@ final class Converter
      *
      * @return \Generator<int,string>
      */
-    private function beginCopy(Statement $statement): \Generator
+    protected function beginCopy(Statement $statement): \Generator
     {
         // The lexer only switches into copy mode for PostgreSQL, so a COPY
         // header from anywhere else has no data block behind it. Swallowing it
@@ -607,7 +607,7 @@ final class Converter
      *
      * @return \Generator<int,string>
      */
-    private function convertCopyRow(Statement $statement): \Generator
+    protected function convertCopyRow(Statement $statement): \Generator
     {
         if ($this->copyTarget === null) {
             // The header was unparseable, so the rows have nowhere to go. They
@@ -653,7 +653,7 @@ final class Converter
      * blobs and boolean spellings, and duplicating any of that here would mean
      * two versions to keep in step.
      */
-    private function copyLiteral(?string $value, ?string $type): string
+    protected function copyLiteral(?string $value, ?string $type): string
     {
         if ($value === null) {
             return 'NULL';
@@ -669,7 +669,7 @@ final class Converter
         return "'" . str_replace("'", "''", $value) . "'";
     }
 
-    private function isNumericType(?string $type): bool
+    protected function isNumericType(?string $type): bool
     {
         return in_array($type, [
             'id', 'bigId', 'integer', 'bigInteger', 'mediumInteger',
@@ -686,7 +686,7 @@ final class Converter
      *
      * @return \Generator<int,string>
      */
-    private function convertAlterTable(Statement $statement): \Generator
+    protected function convertAlterTable(Statement $statement): \Generator
     {
         $parsed = $this->alterTableParser->parse($statement);
 
@@ -771,7 +771,7 @@ final class Converter
     }
 
     /** @param array<string,mixed> $parsed A parsed ADD_FOREIGN_KEY. */
-    private function foreignKeySql(array $parsed): string
+    protected function foreignKeySql(array $parsed): string
     {
         $columns   = implode(', ', array_map([$this, 'wrapColumn'], $parsed['columns']));
         $reference = $parsed['references'];
@@ -801,7 +801,7 @@ final class Converter
      * @param array<string,mixed> $parsed
      * @return \Generator<int,string>
      */
-    private function applyAutoIncrement(Statement $statement, array $parsed): \Generator
+    protected function applyAutoIncrement(Statement $statement, array $parsed): \Generator
     {
         if ($this->to !== 'mysql') {
             $this->report->warn(
@@ -845,7 +845,7 @@ final class Converter
     }
 
     /** @param array<string,mixed> $column */
-    private function columnSql(array $column): string
+    protected function columnSql(array $column): string
     {
         $render = \Closure::bind(
             fn (Grammar $grammar): string => $grammar->columnToSql($column),
@@ -857,7 +857,7 @@ final class Converter
     }
 
     /** @return \Generator<int,string> */
-    private function convertDropTable(Statement $statement): \Generator
+    protected function convertDropTable(Statement $statement): \Generator
     {
         $sql = $statement->body();
 
@@ -893,7 +893,7 @@ final class Converter
     }
 
     /** @return \Generator<int,string> */
-    private function convertInsert(Statement $statement): \Generator
+    protected function convertInsert(Statement $statement): \Generator
     {
         $parsed = $this->insertParser->parse($statement);
 
@@ -936,7 +936,7 @@ final class Converter
     // -----------------------------------------------------------------------
 
     /** Record column types so INSERT translation knows what a 0 means. */
-    private function rememberSchema(Blueprint $blueprint): void
+    protected function rememberSchema(Blueprint $blueprint): void
     {
         $types       = [];
         $definitions = [];
@@ -955,7 +955,7 @@ final class Converter
      *
      * @param array{table:string,name:?string,columns:string[]} $index
      */
-    private function uniqueIndexSql(array $index): string
+    protected function uniqueIndexSql(array $index): string
     {
         $name = $index['name'] ?? 'uq_' . implode('_', $index['columns']);
         $cols = implode(', ', array_map([$this, 'wrapColumn'], $index['columns']));
@@ -971,17 +971,17 @@ final class Converter
      * closure is used rather than duplicating the quoting rules here — a third
      * copy of them is exactly what this feature is trying to avoid.
      */
-    private function wrapColumn(string $name): string
+    protected function wrapColumn(string $name): string
     {
         return $this->wrap('wrapColumn', $name);
     }
 
-    private function wrapTable(string $name): string
+    protected function wrapTable(string $name): string
     {
         return $this->wrap('wrapTable', $name);
     }
 
-    private function wrap(string $method, string $name): string
+    protected function wrap(string $method, string $name): string
     {
         static $wrappers = [];
 
@@ -997,14 +997,14 @@ final class Converter
     }
 
     /** Ensure a passed-through statement still ends with a delimiter. */
-    private function terminate(string $sql): string
+    protected function terminate(string $sql): string
     {
         $sql = rtrim($sql);
 
         return str_ends_with($sql, ';') ? $sql : $sql . ';';
     }
 
-    private function toggleForeignKeys(\PDO $pdo, bool $enabled): void
+    protected function toggleForeignKeys(\PDO $pdo, bool $enabled): void
     {
         $sql = match ($this->to) {
             'mysql'  => 'SET FOREIGN_KEY_CHECKS = ' . ($enabled ? '1' : '0'),
@@ -1027,7 +1027,7 @@ final class Converter
     }
 
     /** Resolve a driver alias to its canonical name. */
-    private function canonical(string $driver): string
+    protected function canonical(string $driver): string
     {
         try {
             return DriverFactory::make(['driver' => $driver])->getName();
@@ -1043,7 +1043,7 @@ final class Converter
      * tools write into an existing path, and the reservation avoids a race with
      * a concurrent migration picking the same name.
      */
-    private function temporaryFile(): string
+    protected function temporaryFile(): string
     {
         $file = tempnam(sys_get_temp_dir(), 'laika-migrate-');
 
@@ -1054,7 +1054,7 @@ final class Converter
         return $file;
     }
 
-    private function excerpt(string $sql): string
+    protected function excerpt(string $sql): string
     {
         $flat = preg_replace('/\s+/', ' ', trim($sql)) ?? $sql;
 

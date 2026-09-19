@@ -17,6 +17,8 @@ use Laika\Engine\Shield\Contract\DetectorInterface;
  * "I could not sleep last night" and "see ticket #42" are all legitimate input.
  *
  * @package Laika\Engine\Shield\Detectors
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class SqlInjectionDetector implements DetectorInterface
 {

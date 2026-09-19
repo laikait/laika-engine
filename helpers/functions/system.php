@@ -19,7 +19,7 @@ use Laika\Engine\Route\Handler;
 use Laika\Engine\Services\Asset;
 // The concrete class, not the relay: version() and appendVersion() are pure
 // statics, so they need no container and no instance resolution.
-use Laika\Engine\Core\Template\Asset as AssetFile;
+use Laika\Engine\Template\Asset as AssetFile;
 use Laika\Engine\Services\AppKey;
 use Laika\Engine\Services\Option;
 use Laika\Engine\Services\Config;

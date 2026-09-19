@@ -18,13 +18,13 @@ namespace Laika\Engine\Shield\Config;
  *
  * @package Laika\Engine\Shield\Config
  */
-final class IpConfig extends SectionConfig
+class IpConfig extends SectionConfig
 {
     /** @var string[] */
-    private array $blocklist = [];
+    protected array $blocklist = [];
 
     /** @var string[] */
-    private array $allowlist = [];
+    protected array $allowlist = [];
 
     /**
      * @param string[]|null $value

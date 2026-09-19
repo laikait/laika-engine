@@ -2,7 +2,7 @@
 
 ## The Error Handler
 
-**Class:** `Laika\Engine\Core\Exceptions\Handler`. `CoreProviders::boot()` registers it on every request by calling `Handler::register()`, which installs three hooks:
+**Class:** `Laika\Engine\Exceptions\Handler`. `CoreProviders::boot()` registers it on every request by calling `Handler::register()`, which installs three hooks:
 
 | Hook | Effect |
 |---|---|
@@ -44,7 +44,7 @@ The `exception` field holds the message only when `DEBUG` is on; otherwise it's 
 Only `HttpException` and its subclasses control the response status:
 
 ```php
-use Laika\Engine\Core\Exceptions\{HttpException, NotFoundHttpException, AuthenticationException, ValidationException};
+use Laika\Engine\Exceptions\{HttpException, NotFoundHttpException, AuthenticationException, ValidationException};
 
 throw new NotFoundHttpException();                         // 404 "Page Not Found"
 throw new AuthenticationException();                       // 401 "Unauthenticated."
@@ -54,7 +54,7 @@ throw new ValidationException(['email' => ['Already registered.']]); // 422
 
 ## Exception Classes
 
-All live in `Laika\Engine\Core\Exceptions`.
+All live in `Laika\Engine\Exceptions`.
 
 | Class | Extends | `getStatusCode()` | Thrown by |
 |---|---|---|---|
@@ -80,9 +80,9 @@ All live in `Laika\Engine\Core\Exceptions`.
 The handler reads `getStatusCode()` only from `HttpException` subclasses. Every other exception renders as a 500 unless you catch it. For example, catch `CSRFException` and answer 403 or 419 yourself.
 
 Two more things to know:
-- **Relays throw a different `RelayException`.** Calling a method a relay's class doesn't have throws `Laika\Engine\Relay\Exceptions\RelayException`, from laika-relay, not `Laika\Engine\Core\Exceptions\RelayException`.
+- **Relays throw a different `RelayException`.** Calling a method a relay's class doesn't have throws `Laika\Engine\Relay\Exceptions\RelayException`, from laika-relay, not `Laika\Engine\Exceptions\RelayException`.
 - **`LocalException` and `ResourceException` can't chain.** Both type `?Throwable $previous` without importing `Throwable`, so passing a previous exception to either raises a `TypeError`.
 
 ## ServerError
 
-`Laika\Engine\Core\Exceptions\ServerError::show(): string` returns the self-contained HTML page shown for errors in production.
+`Laika\Engine\Exceptions\ServerError::show(): string` returns the self-contained HTML page shown for errors in production.

@@ -12,8 +12,12 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Route;
 
+use Laika\Engine\Support\Macroable;
+
 class Url
 {
+    use Macroable;
+
     protected array $lastRoute;
 
     public static function get(string $uri, mixed $controller, string|array $pipelines = []): self

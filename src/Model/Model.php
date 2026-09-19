@@ -15,9 +15,19 @@ namespace Laika\Engine\Model;
 use Laika\Engine\Model\Schema\Expression;
 use Laika\Engine\Model\Exceptions\ModelException;
 use Laika\Engine\Model\Exceptions\ConnectionException;
+use Laika\Engine\Support\Macroable;
+use Laika\Engine\Model\Concerns\BuildsQueries;
+use Laika\Engine\Model\Concerns\Paginates;
+use Laika\Engine\Model\Concerns\SoftDeletes;
+use Laika\Engine\Model\Concerns\CastsValues;
+use Laika\Engine\Model\Concerns\CachesQueries;
+use Laika\Engine\Model\Concerns\ManagesTransactions;
 
 class Model
 {
+    use Macroable;
+    use BuildsQueries, Paginates, SoftDeletes, CastsValues, CachesQueries, ManagesTransactions;
+
     /**
      * @var \PDO PDO Database Connection Object.
      * Do not read directly — use pdo(), which refreshes a stale handle.
@@ -40,10 +50,10 @@ class Model
     protected array $joinTables = [];
 
     /** @var bool Whether remember() was called for the current query */
-    private bool $remember = false;
+    protected bool $remember = false;
 
     /** @var ?int TTL passed to remember(); null uses the configured default */
-    private ?int $rememberTtl = null;
+    protected ?int $rememberTtl = null;
 
     /**
      * @var ?callable Returns the store query results are cached in, or null.
@@ -106,7 +116,7 @@ class Model
      * back what the subclass declared rather than a hardcoded false — otherwise
      * a soft-delete model starts hard-deleting on its second query.
      */
-    private bool $softDeleteDefault = false;
+    protected bool $softDeleteDefault = false;
 
     /** @var bool Include soft-deleted rows in reads (withTrash()). */
     protected bool $withTrashed = false;
@@ -179,7 +189,7 @@ class Model
     /**
      * Pull a fresh PDO handle and driver name from the registry.
      */
-    private function refreshConnection(): void
+    protected function refreshConnection(): void
     {
         // Add Connection if doesn't exists
         if (!Connection::has($this->connection)) {
@@ -195,400 +205,6 @@ class Model
         $this->pdo        = Connection::get($this->connection);
         $this->driver     = Connection::driver($this->connection);
         $this->generation = Connection::generation();
-    }
-
-    /**
-     * // Table Name
-     * @param string $table Required table name
-     * @return Static
-     */
-    public function table(string $table): Static
-    {
-        // Deliberately does not reset(): calling table() mid-chain used to
-        // discard the select and wheres already set, silently.
-        $this->table = $table;
-        return $this;
-    }
-
-    /**
-     * Select
-     * @param array|string|null $columns Column names. Default is null
-     * @return Static
-     */
-    public function select(array|string|Expression|null $columns = null): Static
-    {
-        if ($columns === null || $columns === '' || $columns === []) {
-            $this->columns = '*';
-            return $this;
-        }
-
-        // A plain string may be a comma-separated list — "id, name, email".
-        // Splitting is safe here because every part is sanitised below; the old
-        // code split too, but then passed anything containing "(" through raw.
-        $list = match (true) {
-            is_array($columns)              => $columns,
-            $columns instanceof Expression  => [$columns],
-            default                         => explode(',', $columns),
-        };
-
-        $parts = array_map(function (mixed $col): string {
-            // Raw SQL is opt-in and explicit. Anything else is an identifier.
-            if ($col instanceof Expression) {
-                return (string) $col;
-            }
-
-            if (!is_string($col)) {
-                throw new ModelException('Select columns must be strings or Expression instances.');
-            }
-
-            $col = trim($col);
-
-            // "expr AS alias" — both halves are identifiers here; use an
-            // Expression for the left side when it needs to be a function call.
-            if (preg_match('/^(.+?)\s+AS\s+(\S+)$/i', $col, $m)) {
-                return $this->sanitize(trim($m[1])) . ' AS ' . $this->sanitize(trim($m[2]));
-            }
-
-            // "*" and "users.*" are wildcards, not identifiers.
-            if ($col === '*') {
-                return '*';
-            }
-
-            if (str_ends_with($col, '.*')) {
-                return $this->sanitize(substr($col, 0, -2)) . '.*';
-            }
-
-            return $this->sanitize($col);
-        }, $list);
-
-        $parts = array_values(array_filter($parts, static fn (string $c): bool => $c !== ''));
-
-        $this->columns = $parts === [] ? '*' : implode(', ', $parts);
-        return $this;
-    }
-
-    /**
-     * Select Distinct Rows
-     * @return Static
-     */
-    public function distinct(): Static
-    {
-        $this->columns = 'DISTINCT ' . $this->columns;
-        return $this;
-    }
-
-    /**
-     * Join Clause
-     * @param string $table Required table name to join
-     * @param string $first Required first column
-     * @param string $operator Required operator
-     * @param string $second Required second column
-     * @param string $type Optional join type (LEFT, RIGHT, INNER)
-     * @return Static
-     */
-    public function join(string $table, string $first, string $operator, string $second, string $type = 'LEFT'): Static
-    {
-        $allowedOps = ['=', '!=', '<>', '<', '>', '<=', '>='];
-        if (!in_array(trim($operator), $allowedOps, true)) {
-            throw new ModelException("Invalid join operator [{$operator}].");
-        }
-
-        $type = strtoupper($type);
-        // Kept unquoted: a write to this table has to invalidate this query
-        $this->joinTables[] = $table;
-        // Quote String
-        $table = $this->sanitize($table);
-        $first = $this->sanitize($first);
-        $second = $this->sanitize($second);
-
-        if (!in_array($type, ['LEFT', 'RIGHT', 'INNER'])) {
-            throw new ModelException("Invalid join type: {$type}");
-        }
-
-        $this->joins[] = "{$type} JOIN {$table} ON {$first} {$operator} {$second}";
-        return $this;
-    }
-
-    /**
-     * Where Clause
-     * @param array|string $where Required column name or array of column-value pairs
-     * @param string $operator Optional operator (default: '=')
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function where(array $where, string $operator = '=', string $compare = 'AND'): Static
-    {
-        $allowed = ['=', '!=', '<>', '<', '>', '<=', '>=', 'LIKE', 'NOT LIKE'];
-        if (!in_array(strtoupper(trim($operator)), $allowed, true)) {
-            throw new ModelException("Invalid operator [{$operator}].");
-        }
-
-        if (empty($where)) {
-            return $this;
-        }
-
-        $operator = strtoupper(trim($operator));
-
-        $parts    = [];
-        $bindings = [];
-
-        foreach ($where as $col => $val) {
-            $parts[]    = $this->sanitize((string) $col) . " {$operator} ?";
-            $bindings[] = $val;
-        }
-
-        // One where() call is one group: the columns inside it are joined by
-        // $compare, and the group as a whole attaches to the chain with the same
-        // $compare. Without the parentheses a multi-column OR leaked into the
-        // surrounding chain and SQL's AND-binds-tighter rule silently returned
-        // the wrong rows.
-        $glue      = strtoupper(trim($compare)) === 'OR' ? ' OR ' : ' AND ';
-        $condition = count($parts) === 1 ? $parts[0] : '(' . implode($glue, $parts) . ')';
-
-        $this->addWhere($condition, $bindings, $compare);
-        return $this;
-    }
-
-    /**
-     * Where Not Equal
-     * @param array|string $where Required column name or array of column-value pairs
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function whereNot(array $where, string $compare = 'AND'): Static
-    {
-        return $this->where($where, '!=', $compare);
-    }
-
-    /**
-     * Where In
-     * @param string $column Required column name
-     * @param array $values Required array of values to match
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function whereIn(string $column, array $values, string $compare = 'AND'): Static
-    {
-        // Quote String
-        $column = $this->sanitize($column);
-
-        $placeholders = implode(',', array_fill(0, count($values), '?'));
-        $this->addWhere("{$column} IN ({$placeholders})", $values, $compare);
-        return $this;
-    }
-
-    /**
-     * Where Not In
-     * @param string $column Required column name
-     * @param array $values Required array of values to match
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function whereNotIn(string $column, array $values, string $compare = 'AND'): Static
-    {
-        $column = $this->sanitize($column);
-        $placeholders = implode(',', array_fill(0, count($values), '?'));
-        $this->addWhere("{$column} NOT IN ({$placeholders})", $values, $compare);
-        return $this;
-    }
-
-    /**
-     * Check Column is Null
-     * @param string $column Required column name
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function isNull(string $column, string $compare = 'AND'): Static
-    {
-        // Quote String
-        $column = $this->sanitize($column);
-
-        $this->addWhere("{$column} IS NULL", [], $compare);
-        return $this;
-    }
-
-    /**
-     * Check Column is Not Null
-     * @param string $column Required column name
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function notNull(string $column, string $compare = 'AND'): Static
-    {
-        // Quote String
-        $column = $this->sanitize($column);
-
-        $this->addWhere("{$column} IS NOT NULL", [], $compare);
-        return $this;
-    }
-
-     /**
-     * Between Clause
-     * @param string $column Required column name
-     * @param mixed $value1 Required first value
-     * @param mixed $value2 Required second value
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function between(string $column, mixed $value1, mixed $value2, string $compare = 'AND'): Static
-    {
-        // Quote String
-        $column = $this->sanitize($column);
-
-        $this->addWhere("{$column} BETWEEN ? AND ?", [$value1, $value2], strtoupper($compare));
-        return $this;
-    }
-
-    /**
-     * Where Group
-     * @param callable $callback Callback Function. Example: function(Model $model) {$model->where(...)}
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return Static
-     */
-    public function whereGroup(callable $callback, string $compare = 'AND'): Static
-    {
-        $model = new Static($this->connection);
-
-        $callback($model);
-
-        if (empty($model->wheres)) {
-            return $this;
-        }
-
-        $wheres = implode(' ', $model->wheres);
-        $prefix = empty($this->wheres) ? '' : (strtoupper($compare) === 'OR' ? 'OR ' : 'AND ');
-        $this->wheres[] = "{$prefix}({$wheres})";
-        $this->bindings = array_merge($this->bindings, $model->bindings);
-
-        return $this;
-    }
-
-    /**
-     * Group By Clause
-     * @param string ...$columns Required columns to group by
-     * @return Static
-     */
-    public function groupBy(string ...$columns): Static
-    {
-        $this->groupBy = array_map(function($column){
-            // Quote String
-            return $this->sanitize($column);
-        }, $columns);
-        return $this;
-    }
-
-    /**
-     * Having Clause
-     * @param string $column Example: 'id'
-     * @param string $operator Example: '='
-     * @param mixed $value Example: 1
-     * @return Static
-     */
-    public function having(string $column, string $operator, mixed $value): Static
-    {
-        $allowed = ['=', '!=', '<>', '<', '>', '<=', '>=', 'LIKE', 'NOT LIKE'];
-        if (!in_array(strtoupper(trim($operator)), $allowed, true)) {
-            throw new ModelException("Invalid operator [{$operator}].");
-        }
-
-        // Quote String
-        $column = $this->sanitize($column);
-
-        $this->having[]         = "{$column} " . strtoupper(trim($operator)) . " ?";
-        $this->havingBindings[] = $value;
-        return $this;
-    }
-
-    /**
-     * Order By Clause
-     * @param string $column Required column name
-     * @param string $direction Optional direction (ASC, DESC)
-     * @throws \InvalidArgumentException Throws an exception if an invalid direction is provided
-     * @return Static
-     */
-    public function order(string $column, string $direction = 'ASC'): Static
-    {
-        $direction = strtoupper($direction);
-        // Check Direction
-        if (!in_array($direction, ['ASC', 'DESC'])) {
-            throw new ModelException("Invalid order direction: {$direction}");
-        }
-        // Quote String
-        $column = $this->sanitize($column);
-
-        $this->orderBy[] = "{$column} {$direction}";
-        return $this;
-    }
-
-    /**
-     * Limit Clause
-     * @param int|string $limit Required limit
-     * @return Static
-     */
-    public function limit(int|string $limit): Static
-    {
-        $this->limit = (int) $limit;
-        return $this;
-    }
-
-    /**
-     * Offset Clause
-     * @param int|string $page Page Number. Default is Page Number 1
-     * @return Static
-     */
-    public function page(int|string $page = 1): Static
-    {
-        $this->page = max(1, (int) $page);
-        return $this;
-    }
-
-    /**
-     * Include soft-deleted rows in the result.
-     *
-     * NOTE: this used to return *only* trashed rows, the opposite of the name.
-     * onlyTrashed() is that behaviour.
-     *
-     * @return Static
-     */
-    public function withTrash(): Static
-    {
-        $this->withTrashed = true;
-        $this->onlyTrashed = false;
-        return $this;
-    }
-
-    /**
-     * Return only soft-deleted rows.
-     * @return Static
-     */
-    public function onlyTrashed(): Static
-    {
-        $this->onlyTrashed = true;
-        $this->withTrashed = false;
-        return $this;
-    }
-
-    /**
-     * Exclude soft-deleted rows. This is already the default on a soft-delete
-     * model; it is here for models that opt in per chain with soft().
-     * @return Static
-     */
-    public function withoutTrash(): Static
-    {
-        $this->withTrashed = false;
-        $this->onlyTrashed = false;
-        return $this;
-    }
-
-    /**
-     * Enable Soft Delete
-     * @param bool $enable Default is true
-     * @return Static
-     */
-    public function soft(bool $enable = true): Static
-    {
-        $this->softDelete = $enable;
-        return $this;
     }
 
     /**
@@ -643,35 +259,6 @@ class Model
         } finally {
             // Without this, any failure above left the wheres and bindings
             // attached to the instance and they leaked into the next query.
-            $this->reset();
-        }
-    }
-
-    /**
-     * Stream the result one row at a time.
-     *
-     * Use this instead of get() for result sets too large to materialise. The
-     * finally runs on GeneratorExit too, so abandoning the loop early still
-     * resets the builder.
-     *
-     * @return \Generator<int,array|object>
-     */
-    public function cursor(): \Generator
-    {
-        $sql = $this->build();
-        Log::add($sql, $this->connection);
-
-        $bindings = $this->bindings;
-        $stmt     = null;
-
-        try {
-            $stmt = $this->run($sql, $bindings);
-
-            while (($row = $stmt->fetch()) !== false) {
-                yield $this->cast($row);
-            }
-        } finally {
-            $stmt?->closeCursor();
             $this->reset();
         }
     }
@@ -956,79 +543,6 @@ class Model
     }
 
     /**
-     * Chunk the Results
-     *
-     * Pages with LIMIT/OFFSET, which is O(n^2) on large tables and can skip or
-     * repeat rows if the callback mutates the set. Prefer cursor() unless you
-     * specifically need batches.
-     *
-     * @param int $size Chunk Size. Example: 100
-     * @param callable $callback Receives each batch. Return false to stop.
-     * @return void
-     */
-    public function chunk(int $size, callable $callback): void
-    {
-        $size = max(1, $size);
-
-        // A caller's limit() is a cap on the total, not per batch.
-        $remaining = $this->limit;
-
-        $wheres   = $this->wheres;
-        $bindings = $this->bindings;
-        $havingB  = $this->havingBindings;
-        $page     = 1;
-
-        try {
-            while (true) {
-                $take = $remaining === null ? $size : min($size, $remaining);
-
-                if ($take <= 0) {
-                    break;
-                }
-
-                // build() consumes the where state, so restore it each round.
-                $this->wheres         = $wheres;
-                $this->bindings       = $bindings;
-                $this->havingBindings = $havingB;
-                $this->limit          = $take;
-                $this->page           = $page;
-
-                $sql = $this->build();
-                Log::add($sql, $this->connection);
-
-                $stmt = $this->run($sql, $this->bindings);
-
-                $rows = $stmt->fetchAll();
-                $stmt->closeCursor();
-
-                if (empty($rows)) {
-                    break;
-                }
-
-                foreach ($rows as $k => $row) {
-                    $rows[$k] = $this->cast($row);
-                }
-
-                if ($callback($rows) === false) {
-                    break;
-                }
-
-                if ($remaining !== null) {
-                    $remaining -= count($rows);
-                }
-
-                if (count($rows) < $take) {
-                    break;
-                }
-
-                $page++;
-            }
-        } finally {
-            $this->reset();
-        }
-    }
-
-    /**
      * Update Clause
      * @param array $data Required data to update
      * @throws \InvalidArgumentException Throws an exception if no WHERE clause is provided for the update operation
@@ -1148,7 +662,7 @@ class Model
      * old private regex /^[a-z._]+$/i rejected any column with a digit, so
      * views2 and q1_total were unusable.
      */
-    private function step(string $column, int $number, string $sign, string $label): int
+    protected function step(string $column, int $number, string $sign, string $label): int
     {
         if (str_contains($column, '.')) {
             [$tblName, $colName] = explode('.', $column, 2);
@@ -1181,21 +695,6 @@ class Model
         } finally {
             $this->reset();
         }
-    }
-
-    /**
-     * Restore Row(s)
-     * @throws \InvalidArgumentException Throws an exception if no WHERE clause is provided for the restore operation
-     * @return int Returns the number of affected rows
-     */
-    public function restore(): int
-    {
-        // Check Where Clause Exists
-        if (empty($this->wheres)) {
-            throw new ModelException("No WHERE Clause provided for Restore operation.");
-        }
-
-        return $this->update([$this->deletedAtColumn => null]);
     }
 
     /**
@@ -1270,106 +769,6 @@ class Model
     }
 
     /**
-     * Run a Transactional Callback
-     *
-     * Nested calls on the same connection are supported via savepoints: only
-     * the outermost call opens a real transaction, and an inner failure rolls
-     * back to its own savepoint rather than discarding the outer transaction.
-     *
-     * @param callable $callback Callback Function. Use Model as Argument. Example: function(Model $model) { ... }
-     * @return mixed Returns the result of the callback
-     * @throws \Throwable Whatever the callback threw, unwrapped.
-     */
-    public function transaction(callable $callback): mixed
-    {
-        // Make sure a stale handle is refreshed before the transaction opens —
-        // reconnecting mid-transaction would silently discard it.
-        $this->pdo();
-
-        Connection::beginTransaction($this->connection);
-
-        try {
-            $result = $callback($this);
-            Connection::commit($this->connection);
-            return $result;
-        } catch (\Throwable $e) {
-            try {
-                Connection::rollBack($this->connection);
-            } catch (\Throwable $rollbackError) {
-                // Connection already gone — the original failure is the one
-                // worth reporting, so swallow this and fall through.
-            }
-
-            // Rethrow as-is. Wrapping destroyed PDOException::$errorInfo and the
-            // SQLSTATE, and turned a domain exception thrown to abort the
-            // transaction into an unrecognisable RuntimeException.
-            throw $e;
-        }
-    }
-
-    /**
-     * Cache This Query's Result
-     *
-     * Opt-in per query, and a no-op unless a store was configured through
-     * setQueryCache() -- the query then simply runs. get() and count() honour it;
-     * first(), find() and pluck() go through get(). cursor() never caches: it
-     * exists for result sets too large to hold, which is also too large to cache.
-     *
-     * A write through this model to the table, or to any table joined into the
-     * query, invalidates it. A write the model cannot see -- execute() with raw
-     * SQL, another application, a table reached only through a raw expression
-     * or subquery -- does not; call forgetQueryCache() for those.
-     *
-     * @param ?int $ttl Seconds; null uses the configured default
-     * @return static
-     */
-    public function remember(?int $ttl = null): static
-    {
-        $this->remember = true;
-        $this->rememberTtl = $ttl;
-
-        return $this;
-    }
-
-    /**
-     * Configure Where Remembered Queries Are Cached
-     *
-     * Takes a resolver so nothing is built or connected at boot, only when a
-     * query first asks. It must return an object with get(), set() and pop() --
-     * a Laika\Engine\Cache\Contracts\CacheDriverInterface -- or null for no cache.
-     * This package does not require laika-cache, so the type is not declared.
-     *
-     * @param ?callable $resolver Null disables query caching
-     * @param int $ttl Default seconds for remember() without its own TTL
-     * @return void
-     */
-    public static function setQueryCache(?callable $resolver, int $ttl = 60): void
-    {
-        self::$queryCache = $resolver;
-        self::$queryCacheTtl = max(0, $ttl);
-    }
-
-    /**
-     * Invalidate Every Cached Query on a Table
-     *
-     * For writes the model does not see. Takes effect after the current
-     * transaction commits, like every other invalidation.
-     *
-     * @param string $table Unquoted table name
-     * @param ?string $connection Default is 'default'
-     * @return void
-     */
-    public static function forgetQueryCache(string $table, ?string $connection = null): void
-    {
-        $connection ??= 'default';
-        $key = self::generationKey($connection, $table);
-
-        Connection::afterCommit(static function () use ($key): void {
-            self::cacheStore()?->pop($key);
-        }, $connection);
-    }
-
-    /**
      * Generate UID
      * @return string
      */
@@ -1381,31 +780,6 @@ class Model
     ####################################################################
     /*------------------------- INTERNAL API -------------------------*/
     ####################################################################
-
-    /**
-     * Add Where Condition
-     * @param string $condition Required condition string
-     * @param array $bindings Optional bindings for the condition
-     * @param string $compare Optional comparison type (AND, OR)
-     * @return void
-     */
-    /**
-     * Add the soft-delete predicate to a read.
-     *
-     * Only applies to a soft-delete model. Previously $softDelete affected
-     * delete() alone, so reads returned trashed rows by default.
-     */
-    private function applyTrashFilter(): void
-    {
-        if ($this->onlyTrashed) {
-            $this->addWhere($this->sanitize($this->deletedAtColumn) . ' IS NOT NULL');
-            return;
-        }
-
-        if ($this->softDelete && !$this->withTrashed) {
-            $this->addWhere($this->sanitize($this->deletedAtColumn) . ' IS NULL');
-        }
-    }
 
     /**
      * Send the prepared chunks, optionally asking PostgreSQL for the id it
@@ -1424,7 +798,7 @@ class Model
      * @throws \PDOException
      * @return ?string The id RETURNING produced, or null when it was not used.
      */
-    private function runInsert(string $tbl, array $columns, array $chunks, ?string $returning): ?string
+    protected function runInsert(string $tbl, array $columns, array $chunks, ?string $returning): ?string
     {
         $stmt        = null;
         $preparedSql = null;
@@ -1516,7 +890,7 @@ class Model
      * aggregate alias, say — compares an integer to a string and silently
      * matches nothing.
      */
-    private function bindAll(\PDOStatement $stmt, array $bindings): void
+    protected function bindAll(\PDOStatement $stmt, array $bindings): void
     {
         $i = 0;
         foreach ($bindings as $value) {
@@ -1534,7 +908,7 @@ class Model
     /**
      * Prepare, bind and execute.
      */
-    private function run(string $sql, array $bindings): \PDOStatement
+    protected function run(string $sql, array $bindings): \PDOStatement
     {
         $stmt = $this->pdo()->prepare($sql);
 
@@ -1543,357 +917,6 @@ class Model
         $stmt->execute();
 
         return $stmt;
-    }
-
-    private function addWhere(string $condition, array $bindings = [], string $compare = 'AND'): void
-    {
-        $compare = strtoupper($compare);
-        $prefix = empty($this->wheres) ? '' : ($compare === 'OR' ? 'OR ' : 'AND ');
-        $this->wheres[] = "{$prefix}{$condition}";
-        $this->bindings = array_merge($this->bindings, $bindings);
-    }
-
-    /**
-     * Build the SQL Query
-     * @throws \PDOException Throws an exception if the table name is not set
-     * @return string Returns the built SQL query
-     */
-    private function build(): string
-    {
-        if (empty($this->table)) {
-            throw new ModelException("Table Name Not Found!");
-        }
-
-        // A soft-delete model hides trashed rows unless asked otherwise. This
-        // has to happen before the WHERE is assembled below.
-        $this->applyTrashFilter();
-
-        // Sanitize Table
-        $tbl = $this->sanitize($this->table);
-
-        $sql = "SELECT {$this->columns} FROM {$tbl}";
-
-        if (!empty($this->joins)) {
-            $sql .= " " . implode(' ', $this->joins);
-        }
-
-        if (!empty($this->wheres)) {
-            $sql .= " WHERE " . implode(' ', $this->wheres);
-        }
-
-        if (!empty($this->groupBy)) {
-            $sql .= " GROUP BY " . implode(', ', $this->groupBy);
-        }
-
-        if (!empty($this->having)) {
-            $sql .= " HAVING " . implode(' AND ', $this->having);
-
-            // HAVING is emitted after WHERE, so its bindings belong after the
-            // WHERE bindings regardless of the order the methods were called in.
-            $this->bindings = array_merge($this->bindings, $this->havingBindings);
-            $this->havingBindings = [];
-        }
-
-        if (!empty($this->orderBy)) {
-            $sql .= " ORDER BY " . implode(', ', $this->orderBy);
-        }
-
-        $offset = null;
-
-        if ($this->page !== null) {
-            if ($this->limit === null) {
-                throw new ModelException(
-                    "limit() Must Be Set Before Using page()."
-                );
-            }
-            $offset = ($this->page - 1) * $this->limit;
-        }
-
-        if ($this->limit !== null) {
-            switch ($this->driver()) {
-                case 'sqlsrv':
-                    if ($offset !== null) {
-                        if (empty($this->orderBy)) {
-                            throw new ModelException(
-                                "SQL Server Requires ORDER BY When Using OFFSET."
-                            );
-                        }
-                        $sql .= " OFFSET {$offset} ROWS FETCH NEXT {$this->limit} ROWS ONLY";
-                    } else {
-                        // T-SQL wants SELECT DISTINCT TOP n, not SELECT TOP n DISTINCT.
-                        $sql = preg_replace(
-                            '/^SELECT\s+(DISTINCT\s+)?/i',
-                            "SELECT $1TOP {$this->limit} ",
-                            $sql
-                        );
-                    }
-                    break;
-
-                case 'oci':
-                    if ($offset !== null) {
-                        if (empty($this->orderBy)) {
-                            throw new ModelException(
-                                "Oracle Requires ORDER BY When Using OFFSET."
-                            );
-                        }
-                        $sql .= " OFFSET {$offset} ROWS FETCH NEXT {$this->limit} ROWS ONLY";
-                    } else {
-                        $sql .= " FETCH FIRST {$this->limit} ROWS ONLY";
-                    }
-                    break;
-
-                case 'firebird':
-                    $start = ($offset ?? 0) + 1;
-                    $end   = $start + $this->limit - 1;
-                    $sql  .= " ROWS {$start} TO {$end}";
-                    break;
-
-                default:
-                    $sql .= " LIMIT {$this->limit}";
-                    if ($offset !== null) {
-                        $sql .= " OFFSET {$offset}";
-                    }
-                    break;
-            }
-        }
-
-        return $sql;
-    }
-
-    /**
-     * Apply type casts to a fetched row.
-     * @return array|object
-     */
-    protected function cast(array|object $row): array|object
-    {
-        foreach ($this->casts as $column => $type) {
-            if (!$this->rowHas($row, $column)) continue;
-
-            $value = $this->rowGet($row, $column);
-
-            // NULL means "absent" and must survive the cast. int/float/bool
-            // used to coerce it to 0/0.0/false, losing the distinction.
-            if ($value === null) {
-                continue;
-            }
-
-            $row = $this->rowSet($row, $column, match (strtolower($type)) {
-                'int', 'integer'  => $this->castInt($value),
-                'float', 'double' => (float) $value,
-
-                // DECIMAL comes back as a string from every driver; routing it
-                // through float would introduce binary rounding error.
-                'decimal'         => (string) $value,
-
-                // Compare against known falsy values instead of a naive (bool)
-                // cast. 't'/'f' are what pdo_pgsql returns for a boolean.
-                'bool', 'boolean' => !in_array(
-                    is_string($value) ? strtolower($value) : $value,
-                    [0, 0.0, '0', '', 'false', 'f', 'off', 'no', false],
-                    true
-                ),
-
-                'array', 'json'   => (static function () use ($value) {
-                        $decoded = json_decode((string) $value, true);
-                        if (json_last_error() !== JSON_ERROR_NONE) {
-                            throw new ModelException(
-                                "Failed to decode JSON: " . json_last_error_msg()
-                            );
-                        }
-                        return $decoded;
-                    })(),
-
-                'serialize' => (static function () use ($value) {
-                        // No object instantiation from database content.
-                        $result = unserialize((string) $value, ['allowed_classes' => false]);
-                        if ($result === false && (string) $value !== 'b:0;') {
-                            throw new ModelException(
-                                "Failed to unserialize value: [{$value}]"
-                            );
-                        }
-                        return $result;
-                    })(),
-
-                'string'          => (string) $value,
-
-                // Falling through silently made a typo like 'integar' invisible.
-                default           => throw new ModelException(
-                    "Unknown cast type [{$type}] for column [{$column}]."
-                ),
-            });
-        }
-
-        return $row;
-    }
-
-    /**
-     * Cast to int without silently clamping.
-     *
-     * A BIGINT UNSIGNED past PHP_INT_MAX (a snowflake id, say) would come back
-     * as PHP_INT_MAX. Keeping it as a string is lossless.
-     */
-    private function castInt(mixed $value): int|string
-    {
-        if (is_string($value) && preg_match('/^-?\d+$/', $value)) {
-            $asInt = (int) $value;
-
-            if ((string) $asInt !== ltrim($value, '+')) {
-                return $value;
-            }
-
-            return $asInt;
-        }
-
-        return (int) $value;
-    }
-
-    /**
-     * Cache Key For The Current Query, or Null When it Must Not be Cached
-     *
-     * Null inside a transaction: a read there can see rows that are not
-     * committed yet, and caching those would hand them to every other request.
-     *
-     * @param string $kind get or count, so the two never share an entry
-     * @param string $sql The built statement
-     * @return ?string
-     */
-    private function queryCacheKey(string $kind, string $sql): ?string
-    {
-        if (!$this->remember || self::$queryCache === null) {
-            return null;
-        }
-
-        if (Connection::transactionLevel($this->connection) > 0) {
-            return null;
-        }
-
-        $store = self::cacheStore();
-
-        if ($store === null) {
-            return null;
-        }
-
-        $generations = [];
-
-        foreach (array_unique(array_merge([$this->table], $this->joinTables)) as $table) {
-            $generations[$table] = $this->generation($store, $table);
-        }
-
-        try {
-            $fingerprint = serialize([$kind, $this->connection, $this->driver(), $sql, $this->bindings, $generations]);
-        } catch (\Throwable) {
-            // A binding that cannot be serialized cannot be part of a key
-            return null;
-        }
-
-        return 'query:' . sha1($fingerprint);
-    }
-
-    /**
-     * @param string $key
-     * @return mixed The cached value, or the miss sentinel
-     */
-    private function queryCacheRead(string $key): mixed
-    {
-        self::$miss ??= new \stdClass();
-
-        try {
-            return self::cacheStore()?->get($key, self::$miss) ?? self::$miss;
-        } catch (\Throwable) {
-            // A cache that fails is a miss, never a failed query
-            return self::$miss;
-        }
-    }
-
-    /**
-     * @param string $key
-     * @param mixed $value
-     * @return void
-     */
-    private function queryCacheWrite(string $key, mixed $value): void
-    {
-        try {
-            self::cacheStore()?->set($key, $value, $this->rememberTtl ?? self::$queryCacheTtl);
-        } catch (\Throwable) {
-            // Not caching is always a safe outcome
-        }
-    }
-
-    /**
-     * Invalidate a Table's Cached Queries Once The Write is Committed
-     * @param string $table
-     * @return void
-     */
-    private function invalidateQueryCache(string $table): void
-    {
-        // Nothing configured, nothing cached, nothing to do: writes stay free
-        if (self::$queryCache === null) {
-            return;
-        }
-
-        self::forgetQueryCache($table, $this->connection);
-    }
-
-    /**
-     * A Table's Current Generation Token
-     *
-     * Invalidation deletes the token rather than counting it up. A counter that
-     * expired, or that Memcached evicted, would restart and could line up with a
-     * key some old entry was stored under. A token minted fresh whenever it is
-     * missing never does: losing it can only cause a miss.
-     *
-     * @param object $store
-     * @param string $table
-     * @return string
-     */
-    private function generation(object $store, string $table): string
-    {
-        $key = self::generationKey($this->connection, $table);
-
-        try {
-            $token = $store->get($key);
-
-            if (is_string($token) && $token !== '') {
-                return $token;
-            }
-
-            $token = bin2hex(random_bytes(8));
-            // No expiry: the token must outlive every entry keyed on it
-            $store->set($key, $token, 0);
-
-            return $token;
-        } catch (\Throwable) {
-            // Unique per call, so a broken store yields a miss, never a stale hit
-            return bin2hex(random_bytes(8));
-        }
-    }
-
-    /**
-     * @param string $connection
-     * @param string $table
-     * @return string
-     */
-    private static function generationKey(string $connection, string $table): string
-    {
-        return 'query-gen:' . $connection . ':' . strtolower(trim($table));
-    }
-
-    /**
-     * @return ?object
-     */
-    private static function cacheStore(): ?object
-    {
-        if (self::$queryCache === null) {
-            return null;
-        }
-
-        try {
-            $store = (self::$queryCache)();
-        } catch (\Throwable) {
-            return null;
-        }
-
-        return is_object($store) ? $store : null;
     }
 
     /**
@@ -1921,77 +944,10 @@ class Model
     }
 
     /**
-     * Read a column from a fetched row.
-     *
-     * Rows are arrays under PDO::FETCH_ASSOC and stdClass under FETCH_OBJ, and
-     * callers may set either through the connection's `options`. These three
-     * helpers are the only places that care which.
-     */
-    protected function rowGet(array|object $row, string $key): mixed
-    {
-        return is_array($row) ? ($row[$key] ?? null) : ($row->{$key} ?? null);
-    }
-
-    protected function rowHas(array|object $row, string $key): bool
-    {
-        return is_array($row) ? array_key_exists($key, $row) : property_exists($row, $key);
-    }
-
-    protected function rowSet(array|object $row, string $key, mixed $value): array|object
-    {
-        if (is_array($row)) {
-            $row[$key] = $value;
-        } else {
-            $row->{$key} = $value;
-        }
-
-        return $row;
-    }
-
-    private function wrapIdent(string $name, string $driver): string
-    {
-        return match ($driver) {
-            'mysql'  => '`' . str_replace('`', '``', $name) . '`',
-            'sqlsrv' => '[' . str_replace(']', ']]', $name) . ']',
-            default  => '"' . str_replace('"', '""', $name) . '"',
-        };
-    }
-
-    /**
-     * Add Table Sanitization in Model Class
-     * @return string
-     */
-    protected function sanitize(string $identifier): string
-    {
-        // Remove dangerous characters
-        // return preg_replace('/[^a-zA-Z0-9_]/', '', $identifier);
-
-        // Handle table.column notation
-        $driver = $this->driver();
-
-        if (str_contains($identifier, '.')) {
-            [$table, $column] = explode('.', $identifier, 2);
-            return $this->wrapIdent($this->validate($table), $driver)
-                . '.'
-                . $this->wrapIdent($this->validate($column), $driver);
-        }
-
-        return $this->wrapIdent($this->validate($identifier), $driver);
-    }
-
-    private function validate(string $name): string
-    {
-        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $name)) {
-            throw new ModelException("Invalid Identifier [{$name}].");
-        }
-        return $name;
-    }
-
-    /**
      * Prevent Cloning
      * @throws \Exception Throws an exception if cloning is attempted
      */
-    private function __clone()
+    protected function __clone()
     {
         throw new ModelException('Cloning is Not Allowed.');
     }

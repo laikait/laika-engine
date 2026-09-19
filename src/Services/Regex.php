@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Services;
 
 use Laika\Engine\Relay\Relay;
-use Laika\Engine\Core\Regex\Abstracts\Rule;
+use Laika\Engine\Regex\Abstracts\Rule;
 
 /**
  * @method static void      addRule(Rule $rule)

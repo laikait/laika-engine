@@ -14,8 +14,8 @@ namespace Laika\Engine\Services;
 
 use Generator;
 use Laika\Engine\Relay\Relay;
-use Laika\Engine\Core\IP\Version\IPv4;
-use Laika\Engine\Core\IP\Version\IPv6;
+use Laika\Engine\IP\Version\IPv4;
+use Laika\Engine\IP\Version\IPv6;
 
 /**
  * @method static IPv4|IPv6 parse(string $cidr)

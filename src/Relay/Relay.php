@@ -123,7 +123,7 @@ abstract class Relay
      * through static proxy calls.
      *
      * Example:
-     *   $auth = Auth::relayRoot(); // returns Laika\Engine\Core\Auth\Auth instance
+     *   $auth = Auth::relayRoot(); // returns Laika\Engine\Auth\Auth instance
      */
     public static function relayRoot(): object
     {
@@ -183,7 +183,11 @@ abstract class Relay
     {
         $instance = static::resolveInstance();
 
-        if (!method_exists($instance, $method)) {
+        // A macro (see Laika\Engine\Support\Macroable) is a method too, just one that
+        // method_exists() cannot see
+        $isMacro = method_exists($instance, 'hasMacro') && $instance::hasMacro($method);
+
+        if (!method_exists($instance, $method) && !$isMacro) {
             $class = $instance::class;
             throw new RelayException("Method [{$method}] does not exist on [{$class}].");
         }

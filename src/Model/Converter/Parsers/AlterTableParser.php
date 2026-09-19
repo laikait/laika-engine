@@ -26,6 +26,8 @@ use Laika\Engine\Model\Converter\Statement;
  * Only the forms a dump actually contains are recognised. Anything else returns
  * null so the caller can fall back to passing the statement through unchanged
  * rather than quietly discarding something it did not understand.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class AlterTableParser
 {

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Laika\Engine\Core\Helper\Directory;
+use Laika\Engine\Helper\Directory;
 use RuntimeException;
 
 final class DirectoryTest extends TestCase

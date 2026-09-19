@@ -130,7 +130,7 @@ see [Schema & migrations](#schema--migrations).
 **4. Dispatch it** from a controller, service, anywhere:
 
 ```php
-use Laika\Engine\Core\Worker\Queue;
+use Laika\Engine\Worker\Queue;
 use App\Job\SendWelcomeEmail;
 
 Queue::driver()->push(new SendWelcomeEmail($userId), 'emails');
@@ -185,10 +185,10 @@ return [
 
 Beyond `reserve_timeout` / `max_tries` above, the `redis` and `json` drivers have no connection config of their own:
 
-- **`redis`** connects with `lf-config/redis.php` as-is, via `Laika\Engine\Core\Storage\Connection\RedisConnection` — the same factory `RedisStorage` uses, so it picks up `host`, `port`, `password`, `username` (Redis 6 ACL), `database`, `timeout` and `read_timeout`. Keys are namespaced under that file's `prefix` + `:queue`, so queue keys can't collide with cache or session keys sharing the prefix.
+- **`redis`** connects with `lf-config/redis.php` as-is, via `Laika\Engine\Storage\Connection\RedisConnection` — the same factory `RedisStorage` uses, so it picks up `host`, `port`, `password`, `username` (Redis 6 ACL), `database`, `timeout` and `read_timeout`. Keys are namespaced under that file's `prefix` + `:queue`, so queue keys can't collide with cache or session keys sharing the prefix.
 - **`json`** always uses `lf-storage/queues/jobs.json` (and `lf-storage/queues/failed.json`). Every queue shares one file, filtered by a `queue` field per record.
 
-This same resolution logic lives in two places, kept deliberately in sync: `bin/worker` (for the worker process) and `Laika\Engine\Core\Worker\Queue` (for the `queue:*` commands and your own dispatch code).
+This same resolution logic lives in two places, kept deliberately in sync: `bin/worker` (for the worker process) and `Laika\Engine\Worker\Queue` (for the `queue:*` commands and your own dispatch code).
 
 ---
 
@@ -273,10 +273,10 @@ $driver->push(new SendWelcomeEmail($id), 'emails');  // -> 'emails'
 
 ### Inside the framework (recommended)
 
-`Laika\Engine\Core\Worker\Queue` builds whichever driver `lf-config/queue.php` names, so your dispatch code doesn't hardcode a backend and doesn't drift from the worker's choice:
+`Laika\Engine\Worker\Queue` builds whichever driver `lf-config/queue.php` names, so your dispatch code doesn't hardcode a backend and doesn't drift from the worker's choice:
 
 ```php
-use Laika\Engine\Core\Worker\Queue;
+use Laika\Engine\Worker\Queue;
 
 $driver = Queue::driver();
 
@@ -377,7 +377,7 @@ Queries through `Laika\Engine\Queue\Model\QueueModel` using laika-model's portab
 
 ### `JsonDriver`
 
-One JSON array of records in a single file. Every read-modify-write goes through `Laika\Engine\Core\Storage\JsonStorage::mutate()`, which holds a single `flock(LOCK_EX)` across the whole read → mutate → write, so two workers can't claim the same job. Fine for development, not intended for production. Note it depends on `APP_PATH` and on `JsonStorage` itself, so unlike the other two it **cannot** be used outside a Laika app.
+One JSON array of records in a single file. Every read-modify-write goes through `Laika\Engine\Storage\JsonStorage::mutate()`, which holds a single `flock(LOCK_EX)` across the whole read → mutate → write, so two workers can't claim the same job. Fine for development, not intended for production. Note it depends on `APP_PATH` and on `JsonStorage` itself, so unlike the other two it **cannot** be used outside a Laika app.
 
 ---
 
@@ -426,7 +426,7 @@ Without `pcntl`/`posix` (i.e. Windows) the worker degrades to running jobs inlin
 
 The worker exits gracefully when memory crosses a soft threshold, letting supervisor or systemd restart it with a clean heap — this is normal operation, not a crash.
 
-`bin/worker` first applies the framework's `CLI_MEMORY_LIMIT` (from `lf-inc/const.php`) as the process's real `memory_limit` via `Laika\Engine\Core\System\MemoryManager`. Then `Worker::work()` with `memoryLimit: null` reads PHP's *current* `memory_limit` and takes ~90% of it as the restart threshold, so the worker bows out before genuinely risking a hard OOM mid-job. Pass an explicit `int` (MB) to override.
+`bin/worker` first applies the framework's `CLI_MEMORY_LIMIT` (from `lf-inc/const.php`) as the process's real `memory_limit` via `Laika\Engine\System\MemoryManager`. Then `Worker::work()` with `memoryLimit: null` reads PHP's *current* `memory_limit` and takes ~90% of it as the restart threshold, so the worker bows out before genuinely risking a hard OOM mid-job. Pass an explicit `int` (MB) to override.
 
 Falls back to a flat 128MB when `laikait/laika-core` isn't installed, when `memory_limit` can't be parsed, or when it's unlimited (`-1`).
 
@@ -637,7 +637,7 @@ Do it once at bootstrap, before any `pop()`. Calls are additive and de-duplicate
 
 - **No stalled-job reaper for `DatabaseDriver`/`JsonDriver`.** A worker killed mid-job leaves `reserved_at` set forever, and that job is never picked up again. `RedisDriver::pop()` self-heals via its reserved sweep (`reserve_timeout`, default 90s); a cron-callable `reapStalled()` for the other two is the obvious next addition.
 - **`DatabaseDriver::pop()` has no locking clause** — see [Concurrency caveat](#concurrency-caveat).
-- **No `QueueRelay` / `QueueServiceProvider`.** There's no facade in `Laika\Engine\Services` yet; use `Laika\Engine\Core\Worker\Queue` as shown in [Dispatching jobs](#dispatching-jobs).
+- **No `QueueRelay` / `QueueServiceProvider`.** There's no facade in `Laika\Engine\Services` yet; use `Laika\Engine\Worker\Queue` as shown in [Dispatching jobs](#dispatching-jobs).
 - **`Job::$delay` and `Job::$queue` are not honoured by `push()`** — pass both as arguments instead. See [Two traps](#two-traps-worth-knowing).
 - **No batching, chaining, or unique-job support.**
 
@@ -653,7 +653,7 @@ The package works without the Laika framework, with limits:
 | `RedisDriver` | Yes — needs `ext-redis` only |
 | `DatabaseDriver`, `DatabaseFailedJobProvider` | Yes — needs `laikait/laika-model` |
 | The `Schema` classes | Yes — needs `laikait/laika-model`; call `up()` yourself, in or outside a Laika app |
-| `JsonDriver`, `JsonFailedJobProvider` | **No** — depend on the `APP_PATH` constant and on `Laika\Engine\Core\Storage\JsonStorage` |
+| `JsonDriver`, `JsonFailedJobProvider` | **No** — depend on the `APP_PATH` constant and on `Laika\Engine\Storage\JsonStorage` |
 | `bin/worker`, `queue:*` / `job:*` commands | **No** — require a Laika app (`lf-boot/app.php`) |
 | Auto-registered trusted classes | **No** — call `Job::registerTrustedClasses()` yourself |
 

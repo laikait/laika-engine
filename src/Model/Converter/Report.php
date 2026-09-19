@@ -21,6 +21,8 @@ use Laika\Engine\Model\Exceptions\ConverterException;
  * the rest here, because a dump migration that dies on statement 40,000 of
  * 50,000 is worse than one that flags twelve lossy conversions. Strict mode
  * promotes every warning to an exception instead.
+ *
+ * Final on purpose: an immutable value object.
  */
 final class Report
 {

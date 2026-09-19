@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Queue\Driver;
 
-use Laika\Engine\Core\Storage\Connection\RedisConnection;
+use Laika\Engine\Storage\Connection\RedisConnection;
 use Laika\Engine\Queue\Interfaces\QueueDriverInterface;
 use Laika\Engine\Queue\Interfaces\ReconnectableDriver;
 use Laika\Engine\Queue\Abstracts\Job;

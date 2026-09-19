@@ -19,6 +19,8 @@ namespace Laika\Engine\Model\Converter;
  * problem one level down, inside a single statement — splitting a column list
  * on commas, or finding the closing paren of a CREATE TABLE body, without being
  * fooled by a comma or paren inside a string literal.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class SqlScanner
 {

@@ -6,7 +6,7 @@ namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
 use Laika\Engine\Cli\Table;
-use Laika\Engine\Core\Worker\Queue;
+use Laika\Engine\Worker\Queue;
 
 class QueueFailedCommand implements CommandInterface
 {

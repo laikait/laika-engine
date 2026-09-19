@@ -62,11 +62,12 @@
     "autoload-dev": {
         "psr-4": {
             "Laika\\Engine\\Cache\\Tests\\": "tests/Cache/",
-            "Laika\\Engine\\Core\\Tests\\": "tests/Core/",
+            "Laika\\Engine\\\Tests\\": "tests/Core/",
             "Laika\\Engine\\Model\\Tests\\": "tests/Model/",
             "Laika\\Engine\\Route\\Tests\\": "tests/Route/",
             "Laika\\Engine\\Session\\Tests\\": "tests/Session/",
-            "Laika\\Engine\\Shield\\Tests\\": "tests/Shield/"
+            "Laika\\Engine\\Shield\\Tests\\": "tests/Shield/",
+            "Laika\\Engine\\Extensions\\Tests\\": "tests/Extensions/"
         }
     },
     "bin": [
@@ -109,7 +110,8 @@
             "@php -d auto_prepend_file=tests/bootstrap.php vendor/bin/phpunit --testsuite Model",
             "@php -d auto_prepend_file=tests/Route/bootstrap.php vendor/bin/phpunit --testsuite Route",
             "@php -d auto_prepend_file=tests/bootstrap.php vendor/bin/phpunit --testsuite Session",
-            "@php -d auto_prepend_file=tests/Shield/bootstrap.php vendor/bin/phpunit --testsuite Shield"
+            "@php -d auto_prepend_file=tests/Shield/bootstrap.php vendor/bin/phpunit --testsuite Shield",
+            "@php -d auto_prepend_file=tests/Extensions/bootstrap.php vendor/bin/phpunit --testsuite Extensions"
         ],
         "lint": "php-cs-fixer fix --dry-run --diff",
         "compat": "phpcs --standard=phpcs.xml --report=full"

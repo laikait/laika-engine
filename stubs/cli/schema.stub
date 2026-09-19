@@ -16,7 +16,7 @@ use App\Model\{{model}};
 use Laika\Engine\Model\Schema\Schema;
 use Laika\Engine\Model\Schema\Blueprint;
 use Laika\Engine\Model\Contract\SchemaAbstract;
-use Laika\Engine\Core\Exceptions\SchemaException;
+use Laika\Engine\Exceptions\SchemaException;
 
 class {{class}} extends SchemaAbstract
 {

@@ -41,7 +41,7 @@ Request::input('email')                   ← relay (static call)
 RelayRegistry::make('request')            ← container (builds once, caches)
     │
     ▼
-Laika\Engine\Core\Http\Request->input('email')   ← the real instance
+Laika\Engine\Http\Request->input('email')   ← the real instance
 ```
 
 A relay keeps no state of its own. Every call asks the registry, so `swap()`, `forgetInstance()` and re-binding take effect immediately.
@@ -100,7 +100,7 @@ $registry->singleton('mailer', fn (RelayRegistry $r) => new \Laika\Engine\Mailma
 $registry->singleton(\App\Contracts\PaymentGateway::class, \App\Support\StripeGateway::class);
 
 // A fresh object on every make()
-$registry->bind('upload', \Laika\Engine\Core\Helper\Upload::class);
+$registry->bind('upload', \Laika\Engine\Helper\Upload::class);
 
 // An object you already have
 $registry->instance('clock', new \App\Support\FrozenClock('2025-01-01'));
@@ -162,7 +162,7 @@ $registry->singleton('invoices', InvoiceService::class, ['currency' => 'USD']);
 
 An **interface** has to be bound. It can't be built, so an unbound interface falls through to `$args`, the default, `null` or an exception.
 
-> **In a Laika app, core services are bound by key, not by class.** They live under keys such as `'request'` and `'response'`. Type-hinting `Laika\Engine\Core\Http\Response` therefore builds a new `Response`, not the shared one. Call the relay statically instead (`Response::setStatus(201)`), or alias the class in a provider: `$this->registry->singleton(Response::class, fn ($r) => $r->make('response'));`
+> **In a Laika app, core services are bound by key, not by class.** They live under keys such as `'request'` and `'response'`. Type-hinting `Laika\Engine\Http\Response` therefore builds a new `Response`, not the shared one. Call the relay statically instead (`Response::setStatus(201)`), or alias the class in a provider: `$this->registry->singleton(Response::class, fn ($r) => $r->make('response'));`
 
 ---
 

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Tests\Unit;
 
 use Laika\Engine\Cache\Cache as CacheManager;
-use Laika\Engine\Core\Http\CSRF as CsrfObject;
-use Laika\Engine\Core\Http\Response as ResponseObject;
-use Laika\Engine\Core\Pipeline\CachePipeline;
+use Laika\Engine\Http\CSRF as CsrfObject;
+use Laika\Engine\Http\Response as ResponseObject;
+use Laika\Engine\Pipeline\CachePipeline;
 use Laika\Engine\Route\Handler;
 use Laika\Engine\Services\CSRF;
 use Laika\Engine\Services\Cache;

@@ -20,6 +20,8 @@ use Laika\Engine\Model\Exceptions\ConverterException;
  * Input may be a raw string, a file path, an open resource or an SplFileObject.
  * Everything is read through the same chunked loop, so a one-line CREATE TABLE
  * and a 2 GB mysqldump take the same code path and the same memory.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class StatementReader
 {

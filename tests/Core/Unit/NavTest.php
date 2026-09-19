@@ -8,12 +8,12 @@ use Throwable;
 use RuntimeException;
 use Laika\Engine\Relay\Relay;
 use Laika\Engine\Route\Handler;
-use Laika\Engine\Core\Nav\Builder;
+use Laika\Engine\Nav\Builder;
 use InvalidArgumentException;
 use Laika\Engine\Relay\RelayRegistry;
-use Laika\Engine\Core\Nav\Helper\Item;
+use Laika\Engine\Nav\Helper\Item;
 use PHPUnit\Framework\TestCase;
-use Laika\Engine\Core\Helper\Url as UrlHelper;
+use Laika\Engine\Helper\Url as UrlHelper;
 
 final class NavTest extends TestCase
 {

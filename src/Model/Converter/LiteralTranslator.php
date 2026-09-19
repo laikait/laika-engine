@@ -23,6 +23,8 @@ namespace Laika\Engine\Model\Converter;
  *  - 0xDEADBEEF is a blob literal in MySQL, a number nowhere else.
  *  - 0 and 1 into a PostgreSQL BOOLEAN column are a type error, not false/true.
  *  - '0000-00-00' is a legal MySQL date and is rejected by PostgreSQL.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class LiteralTranslator
 {

@@ -2,7 +2,7 @@
 
 ## File
 
-**Relay:** `Laika\Engine\Services\File` (`file`). **Class:** `Laika\Engine\Core\Helper\File`.
+**Relay:** `Laika\Engine\Services\File` (`file`). **Class:** `Laika\Engine\Helper\File`.
 
 | Method | Returns / does |
 |---|---|
@@ -25,7 +25,7 @@
 
 ## Directory
 
-**Relay:** `Laika\Engine\Services\Directory` (`directory`). **Class:** `Laika\Engine\Core\Helper\Directory`.
+**Relay:** `Laika\Engine\Services\Directory` (`directory`). **Class:** `Laika\Engine\Helper\Directory`.
 
 | Method | Returns / does |
 |---|---|
@@ -41,7 +41,7 @@ Extension filters ignore case and a leading dot. Invalid paths throw `RuntimeExc
 
 ## Upload
 
-**Relay:** `Laika\Engine\Services\Upload` (`upload`, a new instance per use). **Class:** `Laika\Engine\Core\Helper\Upload`.
+**Relay:** `Laika\Engine\Services\Upload` (`upload`, a new instance per use). **Class:** `Laika\Engine\Helper\Upload`.
 
 ```php
 use Laika\Engine\Services\Upload;
@@ -78,7 +78,7 @@ Checks that always apply:
 
 ## Image
 
-**Relay:** `Laika\Engine\Services\Image` (`image`, a new instance per use). **Class:** `Laika\Engine\Core\Helper\Image`. Requires GD.
+**Relay:** `Laika\Engine\Services\Image` (`image`, a new instance per use). **Class:** `Laika\Engine\Helper\Image`. Requires GD.
 
 ```php
 use Laika\Engine\Services\Image;
@@ -110,10 +110,10 @@ Image::path($upload)->thumbnail(300, 300, 'cover')->convertTo('webp')->save($thu
 
 ## Zip
 
-**Class:** `Laika\Engine\Core\Helper\Zip`. Requires `ext-zip`.
+**Class:** `Laika\Engine\Helper\Zip`. Requires `ext-zip`.
 
 ```php
-use Laika\Engine\Core\Helper\Zip;
+use Laika\Engine\Helper\Zip;
 
 (new Zip(APP_PATH . '/lf-storage/backup.zip'))->create(APP_PATH . '/uploads');
 (new Zip($archive))->extract(APP_PATH . '/lf-storage/import');
@@ -129,7 +129,7 @@ Problems throw `PathException`. A missing extension throws `ExtensionException`.
 
 ## MimeType
 
-**Relay:** `Laika\Engine\Services\MimeType` (`mime`). **Class:** `Laika\Engine\Core\Helper\MimeType` (static).
+**Relay:** `Laika\Engine\Services\MimeType` (`mime`). **Class:** `Laika\Engine\Helper\MimeType` (static).
 
 | Method | Returns |
 |---|---|
@@ -147,10 +147,10 @@ The storage classes aren't relays; construct them where you need them.
 
 ### LocalStorage
 
-`Laika\Engine\Core\Storage\LocalStorage(?string $root = null, ?string $publicBaseUrl = null)`
+`Laika\Engine\Storage\LocalStorage(?string $root = null, ?string $publicBaseUrl = null)`
 
 ```php
-use Laika\Engine\Core\Storage\LocalStorage;
+use Laika\Engine\Storage\LocalStorage;
 
 $disk = new LocalStorage(APP_PATH . '/uploads', app_host() . 'uploads');
 $url  = $disk->upload($_FILES['doc'], 'documents');  // …/uploads/documents/report-6650f1c2a3b4d-1718000000.pdf
@@ -170,7 +170,7 @@ Stored names get a `-uniqid-timestamp` suffix, so an upload never overwrites an 
 
 ### S3Storage
 
-`Laika\Engine\Core\Storage\S3Storage(array $overrides = [], ?string $publicBaseUrl = null)` has the same methods as `LocalStorage`. It reads `lf-config/s3.php`; a non-empty value in `$overrides` wins:
+`Laika\Engine\Storage\S3Storage(array $overrides = [], ?string $publicBaseUrl = null)` has the same methods as `LocalStorage`. It reads `lf-config/s3.php`; a non-empty value in `$overrides` wins:
 
 | Key | Default | Meaning |
 |---|---|---|
@@ -187,7 +187,7 @@ Stored names get a `-uniqid-timestamp` suffix, so an upload never overwrites an 
 
 ### JsonStorage
 
-`Laika\Engine\Core\Storage\JsonStorage(?string $path = null)` stores documents in `lf-storage/json/{name}.json` by default.
+`Laika\Engine\Storage\JsonStorage(?string $path = null)` stores documents in `lf-storage/json/{name}.json` by default.
 
 | Method | Returns / does |
 |---|---|
@@ -228,4 +228,4 @@ Memcached treats a TTL over 30 days as a timestamp, and `set()` converts it for 
 
 ### Connection Factories
 
-`Laika\Engine\Core\Storage\Connection\RedisConnection::make(array $overrides = []): Redis`, `MemcachedConnection::make(): Memcached` and `S3Connection::make(): S3Client` build bare clients from the same config files. The storage classes, the session drivers and the queue drivers all use them. A missing extension or package throws `ExtensionException`, and a Redis connect or auth failure does too.
+`Laika\Engine\Storage\Connection\RedisConnection::make(array $overrides = []): Redis`, `MemcachedConnection::make(): Memcached` and `S3Connection::make(): S3Client` build bare clients from the same config files. The storage classes, the session drivers and the queue drivers all use them. A missing extension or package throws `ExtensionException`, and a Redis connect or auth failure does too.

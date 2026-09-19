@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Tests\Unit;
 
-use Laika\Engine\Core\Template\Asset;
+use Laika\Engine\Template\Asset;
 use PHPUnit\Framework\TestCase;
 
 /**

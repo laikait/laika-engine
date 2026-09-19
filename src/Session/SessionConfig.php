@@ -16,6 +16,7 @@ use PDO;
 use Redis;
 use Memcached;
 use Laika\Engine\Model\Model;
+use Laika\Engine\Session\Handler\HandlerFactory;
 use Laika\Engine\Session\Exceptions\SessionHandlerException;
 
 /**
@@ -134,6 +135,24 @@ class SessionConfig
         }
 
         static::select(self::DRIVER_MODEL, array_merge(['connection' => 'default', 'install' => false], $params));
+    }
+
+    /**
+     * Application Driver, Registered With HandlerFactory::extend()
+     * @param string $name Driver name
+     * @param array<string,mixed> $params Handed to the driver's resolver
+     * @return void
+     * @throws SessionHandlerException When no driver of that name is registered
+     */
+    public static function custom(string $name, array $params = []): void
+    {
+        if (!HandlerFactory::has($name)) {
+            throw new SessionHandlerException(
+                "Unknown session driver [{$name}]. Register it with HandlerFactory::extend() first."
+            );
+        }
+
+        static::select(strtolower($name), $params);
     }
 
     ########################################################################

@@ -20,6 +20,8 @@ use Laika\Engine\Model\Converter\Statement;
  *
  * pg_dump and sqlite dumps emit indexes as separate statements rather than
  * inline, so they arrive here rather than through CreateTableParser.
+ *
+ * Final on purpose: an internal part of Converter, not an extension point.
  */
 final class IndexParser
 {

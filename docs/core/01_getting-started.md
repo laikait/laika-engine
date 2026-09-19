@@ -82,7 +82,7 @@ Controllers use the relays directly:
 ```php
 namespace App\Controller;
 
-use Laika\Engine\Core\App\Template;
+use Laika\Engine\App\Template;
 use Laika\Engine\Services\{Request, Redirect};
 
 class ContactController

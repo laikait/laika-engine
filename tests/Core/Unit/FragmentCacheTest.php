@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Tests\Unit;
 
 use Laika\Engine\Cache\Cache as CacheManager;
-use Laika\Engine\Core\Http\CSRF as CsrfObject;
-use Laika\Engine\Core\Template\Twig\CacheTokenParser;
+use Laika\Engine\Http\CSRF as CsrfObject;
+use Laika\Engine\Template\Twig\CacheTokenParser;
 use Laika\Engine\Services\CSRF;
 use Laika\Engine\Services\Cache;
 use PHPUnit\Framework\TestCase;

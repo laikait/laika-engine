@@ -16,8 +16,8 @@ use Laika\Engine\Relay\RelayRegistry;
 use Laika\Engine\Relay\CoreProviders;
 use Laika\Engine\Relay\ProviderRegistry;
 use Laika\Engine\Relay\RelayProvider;
-use Laika\Engine\Core\App\Resource;
-use Laika\Engine\Core\System\MemoryManager;
+use Laika\Engine\App\Resource;
+use Laika\Engine\System\MemoryManager;
 use Laika\Engine\Route\Invoke;
 
 // Define APP Path
@@ -115,7 +115,7 @@ Invoke::setResolver(static fn(string $class): object => $registry->make($class))
 // so the store is handed over as a resolver: nothing is built or connected
 // until a remembered query runs.
 try {
-    $queryCache = (array) (\Laika\Engine\Core\Helper\Config::get('cache', 'query') ?? []);
+    $queryCache = (array) (\Laika\Engine\Helper\Config::get('cache', 'query') ?? []);
 } catch (\Throwable) {
     $queryCache = [];
 }
@@ -135,7 +135,7 @@ unset($queryCache);
 // long-lived process, and config, options and the rest would otherwise stay as
 // the first job left them for the life of the worker.
 \Laika\Engine\Queue\Worker::beforeJob(static function (): void {
-    foreach (\Laika\Engine\Core\System\ProcessState::reset() as $failure) {
+    foreach (\Laika\Engine\System\ProcessState::reset() as $failure) {
         fwrite(STDERR, "[laika] process reset: {$failure}\n");
     }
 });

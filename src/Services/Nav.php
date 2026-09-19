@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Laika\Engine\Services;
 
 use Laika\Engine\Relay\Relay;
-use Laika\Engine\Core\Nav\Builder;
-use Laika\Engine\Core\Nav\Helper\Item;
+use Laika\Engine\Nav\Builder;
+use Laika\Engine\Nav\Helper\Item;
 
 /**
  * @method static Item      add(string $title, string $named, array $namedParams = [], bool $display = true)

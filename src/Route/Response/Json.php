@@ -14,6 +14,9 @@ namespace Laika\Engine\Route\Response;
 
 use Laika\Engine\Services\Response;
 
+/**
+ * Final on purpose: an internal part of the router, not an extension point.
+ */
 final class Json
 {
     /**

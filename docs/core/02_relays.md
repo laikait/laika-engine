@@ -36,43 +36,43 @@ Sharing either of those would hand every caller the same half-used object.
 
 | Relay (`Laika\Engine\Services\…`) | Key | Class | Lifetime | Page |
 |---|---|---|---|---|
-| `Activity` | `activity` | `Laika\Engine\Core\Log\Activity` | singleton | [Data](10_data.md#activity-log) |
-| `AppKey` | `app.key` | `Laika\Engine\Core\App\Key` | singleton | [Config](05_config-and-app.md#app-key) |
-| `Asset` | `template.asset` | `Laika\Engine\Core\Template\Asset` | singleton | [Templates](06_templates.md#asset) |
-| `Config` | `config` | `Laika\Engine\Core\Helper\Config` | singleton | [Config](05_config-and-app.md#config) |
-| `Context` | `template.context` | `Laika\Engine\Core\Template\Context` | singleton | [Templates](06_templates.md#context) |
-| `Cookie` | `cookie` | `Laika\Engine\Core\Helper\Cookie` | singleton | [URL & Client](04_url-client-ip.md#cookie) |
-| `CORS` | `cors` | `Laika\Engine\Core\Http\CORS` | singleton | [HTTP](03_http.md#cors) |
-| `CSRF` | `csrf` | `Laika\Engine\Core\Http\CSRF` | singleton | [HTTP](03_http.md#csrf) |
-| `Date` | `date` | `Laika\Engine\Core\Helper\Date` | singleton | [Utilities](09_utilities.md#date) |
-| `Directory` | `directory` | `Laika\Engine\Core\Helper\Directory` | singleton | [Files](08_files-and-storage.md#directory) |
-| `File` | `file` | `Laika\Engine\Core\Helper\File` | singleton | [Files](08_files-and-storage.md#file) |
-| `Hook` | `hook` | `Laika\Engine\Core\Helper\Hook` | singleton | [Config](05_config-and-app.md#hook) |
-| `Icon` | `icon` | `Laika\Engine\Core\Generator\Icon` | singleton | [Templates](06_templates.md#icon) |
-| `Image` | `image` | `Laika\Engine\Core\Helper\Image` | **per use** | [Files](08_files-and-storage.md#image) |
-| `Infra` | `infra` | `Laika\Engine\Core\App\Infra` | singleton | [Config](05_config-and-app.md#infra) |
-| `Init` | `init` | `Laika\Engine\Core\Helper\Init` | singleton | [Config](05_config-and-app.md#init) |
-| `IP` | `ip` | `Laika\Engine\Core\IP\IP` | singleton | [URL & Client](04_url-client-ip.md#ip-utilities) |
-| `Local` | `local` | `Laika\Engine\Core\Helper\Local` | singleton | [Config](05_config-and-app.md#local-localisation) |
-| `Math` | `math` | `Laika\Engine\Core\Helper\Math` | singleton | [Utilities](09_utilities.md#math) |
-| `Meta` | `template.meta` | `Laika\Engine\Core\Template\Meta` | singleton | [Templates](06_templates.md#meta) |
-| `MimeType` | `mime` | `Laika\Engine\Core\Helper\MimeType` | singleton | [Files](08_files-and-storage.md#mimetype) |
-| `Nav` | `nav` | `Laika\Engine\Core\Nav\Builder` | singleton | [Templates](06_templates.md#nav) |
-| `Option` | `option` | `Laika\Engine\Core\Model\OptionModel` | singleton | [Data](10_data.md#options) |
-| `Page` | `page` | `Laika\Engine\Core\Helper\Page` | singleton | [URL & Client](04_url-client-ip.md#page) |
-| `PhpMetadataParser` | `php.metadata.parser` | `Laika\Engine\Core\Helper\PhpMetadataParser` | singleton | [Utilities](09_utilities.md#phpmetadataparser) |
-| `Redirect` | `redirect` | `Laika\Engine\Core\Http\Redirect` | singleton | [HTTP](03_http.md#redirect) |
-| `Regex` | `regex` | `Laika\Engine\Core\Regex\Regex` | singleton | [Security](07_security.md#regex) |
-| `Request` | `request` | `Laika\Engine\Core\Http\Request` | singleton | [HTTP](03_http.md#request) |
-| `Resource` | `resource` | `Laika\Engine\Core\App\Resource` | singleton | [Config](05_config-and-app.md#resources) |
-| `Response` | `response` | `Laika\Engine\Core\Http\Response` | singleton | [HTTP](03_http.md#response) |
-| `Token` | `token` | `Laika\Engine\Core\Generator\Token` | singleton | [Security](07_security.md#token-jwt) |
-| `Uid` | `uid` | `Laika\Engine\Core\Generator\Uid` | singleton | [Security](07_security.md#uid) |
-| `Unique` | `unique` | `Laika\Engine\Core\Generator\Unique` | singleton | [Security](07_security.md#unique) |
-| `Upload` | `upload` | `Laika\Engine\Core\Helper\Upload` | **per use** | [Files](08_files-and-storage.md#upload) |
-| `Url` | `url` | `Laika\Engine\Core\Helper\Url` | singleton | [URL & Client](04_url-client-ip.md#url) |
-| `Vault` | `vault` | `Laika\Engine\Core\Helper\Vault` | singleton | [Security](07_security.md#vault) |
-| `Visitor` | `visitor` | `Laika\Engine\Core\Helper\Client` | singleton | [URL & Client](04_url-client-ip.md#visitor-client) |
+| `Activity` | `activity` | `Laika\Engine\Log\Activity` | singleton | [Data](10_data.md#activity-log) |
+| `AppKey` | `app.key` | `Laika\Engine\App\Key` | singleton | [Config](05_config-and-app.md#app-key) |
+| `Asset` | `template.asset` | `Laika\Engine\Template\Asset` | singleton | [Templates](06_templates.md#asset) |
+| `Config` | `config` | `Laika\Engine\Helper\Config` | singleton | [Config](05_config-and-app.md#config) |
+| `Context` | `template.context` | `Laika\Engine\Template\Context` | singleton | [Templates](06_templates.md#context) |
+| `Cookie` | `cookie` | `Laika\Engine\Helper\Cookie` | singleton | [URL & Client](04_url-client-ip.md#cookie) |
+| `CORS` | `cors` | `Laika\Engine\Http\CORS` | singleton | [HTTP](03_http.md#cors) |
+| `CSRF` | `csrf` | `Laika\Engine\Http\CSRF` | singleton | [HTTP](03_http.md#csrf) |
+| `Date` | `date` | `Laika\Engine\Helper\Date` | singleton | [Utilities](09_utilities.md#date) |
+| `Directory` | `directory` | `Laika\Engine\Helper\Directory` | singleton | [Files](08_files-and-storage.md#directory) |
+| `File` | `file` | `Laika\Engine\Helper\File` | singleton | [Files](08_files-and-storage.md#file) |
+| `Hook` | `hook` | `Laika\Engine\Helper\Hook` | singleton | [Config](05_config-and-app.md#hook) |
+| `Icon` | `icon` | `Laika\Engine\Generator\Icon` | singleton | [Templates](06_templates.md#icon) |
+| `Image` | `image` | `Laika\Engine\Helper\Image` | **per use** | [Files](08_files-and-storage.md#image) |
+| `Infra` | `infra` | `Laika\Engine\App\Infra` | singleton | [Config](05_config-and-app.md#infra) |
+| `Init` | `init` | `Laika\Engine\Helper\Init` | singleton | [Config](05_config-and-app.md#init) |
+| `IP` | `ip` | `Laika\Engine\IP\IP` | singleton | [URL & Client](04_url-client-ip.md#ip-utilities) |
+| `Local` | `local` | `Laika\Engine\Helper\Local` | singleton | [Config](05_config-and-app.md#local-localisation) |
+| `Math` | `math` | `Laika\Engine\Helper\Math` | singleton | [Utilities](09_utilities.md#math) |
+| `Meta` | `template.meta` | `Laika\Engine\Template\Meta` | singleton | [Templates](06_templates.md#meta) |
+| `MimeType` | `mime` | `Laika\Engine\Helper\MimeType` | singleton | [Files](08_files-and-storage.md#mimetype) |
+| `Nav` | `nav` | `Laika\Engine\Nav\Builder` | singleton | [Templates](06_templates.md#nav) |
+| `Option` | `option` | `Laika\Engine\Model\OptionModel` | singleton | [Data](10_data.md#options) |
+| `Page` | `page` | `Laika\Engine\Helper\Page` | singleton | [URL & Client](04_url-client-ip.md#page) |
+| `PhpMetadataParser` | `php.metadata.parser` | `Laika\Engine\Helper\PhpMetadataParser` | singleton | [Utilities](09_utilities.md#phpmetadataparser) |
+| `Redirect` | `redirect` | `Laika\Engine\Http\Redirect` | singleton | [HTTP](03_http.md#redirect) |
+| `Regex` | `regex` | `Laika\Engine\Regex\Regex` | singleton | [Security](07_security.md#regex) |
+| `Request` | `request` | `Laika\Engine\Http\Request` | singleton | [HTTP](03_http.md#request) |
+| `Resource` | `resource` | `Laika\Engine\App\Resource` | singleton | [Config](05_config-and-app.md#resources) |
+| `Response` | `response` | `Laika\Engine\Http\Response` | singleton | [HTTP](03_http.md#response) |
+| `Token` | `token` | `Laika\Engine\Generator\Token` | singleton | [Security](07_security.md#token-jwt) |
+| `Uid` | `uid` | `Laika\Engine\Generator\Uid` | singleton | [Security](07_security.md#uid) |
+| `Unique` | `unique` | `Laika\Engine\Generator\Unique` | singleton | [Security](07_security.md#unique) |
+| `Upload` | `upload` | `Laika\Engine\Helper\Upload` | **per use** | [Files](08_files-and-storage.md#upload) |
+| `Url` | `url` | `Laika\Engine\Helper\Url` | singleton | [URL & Client](04_url-client-ip.md#url) |
+| `Vault` | `vault` | `Laika\Engine\Helper\Vault` | singleton | [Security](07_security.md#vault) |
+| `Visitor` | `visitor` | `Laika\Engine\Helper\Client` | singleton | [URL & Client](04_url-client-ip.md#visitor-client) |
 
 Two relays don't share their class's name: `Visitor` fronts `Client`, and `AppKey` fronts `App\Key`.
 
@@ -81,8 +81,8 @@ Two relays don't share their class's name: `Visitor` fronts `Client`, and `AppKe
 A relay only forwards to a shared instance, so you can construct any class yourself when you want your own copy:
 
 ```php
-use Laika\Engine\Core\Http\Request;
-use Laika\Engine\Core\Sanitizer\NullSanitizer;
+use Laika\Engine\Http\Request;
+use Laika\Engine\Sanitizer\NullSanitizer;
 
 $raw = new Request(new NullSanitizer()); // a request that doesn't HTML-encode input
 ```

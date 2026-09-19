@@ -6,7 +6,7 @@ namespace Laika\Engine\Core\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Laika\Engine\Model\Connection;
-use Laika\Engine\Core\Model\OptionModel;
+use Laika\Engine\Model\OptionModel;
 
 final class OptionModelTest extends TestCase
 {

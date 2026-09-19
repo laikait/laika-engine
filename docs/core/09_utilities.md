@@ -2,7 +2,7 @@
 
 ## Date
 
-**Relay:** `Laika\Engine\Services\Date` (`date`). **Class:** `Laika\Engine\Core\Helper\Date`.
+**Relay:** `Laika\Engine\Services\Date` (`date`). **Class:** `Laika\Engine\Helper\Date`.
 
 An immutable wrapper around `DateTime`. Every method that changes the date returns a **new** instance, so the shared relay instance is never modified.
 
@@ -49,7 +49,7 @@ Date::setAppTimezone(config('app', 'timezone', 'UTC'));
 
 ## Math
 
-**Relay:** `Laika\Engine\Services\Math` (`math`). **Class:** `Laika\Engine\Core\Helper\Math`. Requires `ext-bcmath`.
+**Relay:** `Laika\Engine\Services\Math` (`math`). **Class:** `Laika\Engine\Helper\Math`. Requires `ext-bcmath`.
 
 Arbitrary-precision arithmetic on strings, for money and anything else floats get wrong.
 
@@ -85,12 +85,12 @@ Every argument accepts `int`, `float` or a numeric `string`, and results are str
 
 ## Cron
 
-**Class:** `Laika\Engine\Core\Helper\Cron`. Linux and macOS only.
+**Class:** `Laika\Engine\Helper\Cron`. Linux and macOS only.
 
 Manages a block of jobs in a user's crontab, between `# [LAIKA-CRON-START]` and `# [LAIKA-CRON-END]` markers. Lines outside the block are never touched.
 
 ```php
-use Laika\Engine\Core\Helper\Cron;
+use Laika\Engine\Helper\Cron;
 
 $cron = new Cron();                       // current user; new Cron('www-data') needs rights to that crontab
 $cron->everyMinute('php /var/www/app/laika queue:work --once', 'queue')
@@ -117,10 +117,10 @@ $cron->everyMinute('php /var/www/app/laika queue:work --once', 'queue')
 
 ## Shell Commands
 
-**Classes:** `Laika\Engine\Core\System\Command\Runner`, `Result`, `AsyncJob`, `ProcessPool`.
+**Classes:** `Laika\Engine\System\Command\Runner`, `Result`, `AsyncJob`, `ProcessPool`.
 
 ```php
-use Laika\Engine\Core\System\Command\Runner;
+use Laika\Engine\System\Command\Runner;
 
 $result = Runner::make()->timeout(30)->cwd(APP_PATH)->run(['git', 'rev-parse', 'HEAD']);
 
@@ -152,7 +152,7 @@ These classes use `proc_open()` and `exec()`, which hardened PHP-FPM pools often
 
 ## PhpMetadataParser
 
-**Relay:** `Laika\Engine\Services\PhpMetadataParser` (`php.metadata.parser`). **Class:** `Laika\Engine\Core\Helper\PhpMetadataParser` (static).
+**Relay:** `Laika\Engine\Services\PhpMetadataParser` (`php.metadata.parser`). **Class:** `Laika\Engine\Helper\PhpMetadataParser` (static).
 
 `parse(string $file): array` reads `Key: Value` lines from the first docblock of a PHP file. It's used to describe modules and themes:
 
@@ -168,7 +168,7 @@ That docblock yields `['name' => 'Blog Module', 'version' => '1.0.0', 'author' =
 
 ## Queue
 
-**Class:** `Laika\Engine\Core\Worker\Queue` (static).
+**Class:** `Laika\Engine\Worker\Queue` (static).
 
 Resolves laika-queue's driver and failed-job store from `lf-config/queue.php`. It's used by the `queue:*` CLI commands, and is useful when you push jobs from application code.
 

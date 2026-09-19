@@ -26,15 +26,15 @@ use Laika\Engine\Model\Exceptions\ConnectionException;
  *   $pdo = Connection::get('read');
  *
  * Every method that accepts a connection name resolves `null` to the current
- * default name, which is 'default' unless changed via {@see self::setDefault()}.
+ * default name, which is 'default' unless changed via {@see static::setDefault()}.
  *
- * Driver names reported by {@see self::driver()} are always *canonical*
+ * Driver names reported by {@see static::driver()} are always *canonical*
  * (mysql, pgsql, sqlite, sqlsrv, oci, firebird) even when the config used an
  * alias such as 'mariadb', 'postgres', 'sqlite3', 'oracle' or 'ibase'.
  */
-final class Connection
+class Connection
 {
-    /** Timezone identifiers/offsets accepted by {@see self::applyTimezone()}. */
+    /** Timezone identifiers/offsets accepted by {@see static::applyTimezone()}. */
     private const TIMEZONE_PATTERN = '/^[A-Za-z0-9_\/+\-:]+$/';
 
     /** @var array<string,array> Stored Configs, Keyed By Connection Name */
@@ -66,7 +66,7 @@ final class Connection
     private static int $generation = 0;
 
     // Prevent instantiation
-    private function __construct() {}
+    protected function __construct() {}
 
     // -----------------------------------------------------------------------
     // Public API
@@ -158,14 +158,14 @@ final class Connection
             throw new ConnectionException("Config Must Contain A 'driver' Key.");
         }
 
-        $name = self::resolve($name);
+        $name = static::resolve($name);
 
         self::$configs[$name] = $config;
 
         // If a live instance already exists for this name, drop it so it
         // will be re-created with the new config on next get(). This also
         // clears the memoised driver name, which may now differ.
-        self::close($name);
+        static::close($name);
     }
 
     /**
@@ -177,16 +177,16 @@ final class Connection
      */
     public static function get(?string $name = null): PDO
     {
-        $name = self::resolve($name);
+        $name = static::resolve($name);
 
-        if (!self::has($name)) {
+        if (!static::has($name)) {
             throw new ConnectionException(
                 "No connection config registered for [{$name}]."
             );
         }
 
         if (!isset(self::$instances[$name])) {
-            self::$instances[$name] = self::createPdo($name);
+            self::$instances[$name] = static::createPdo($name);
         }
 
         return self::$instances[$name];
@@ -197,7 +197,7 @@ final class Connection
      */
     public static function has(?string $name = null): bool
     {
-        return isset(self::$configs[self::resolve($name)]);
+        return isset(self::$configs[static::resolve($name)]);
     }
 
     /**
@@ -209,7 +209,7 @@ final class Connection
      */
     public static function config(?string $name = null): array
     {
-        return self::$configs[self::resolve($name)] ?? [];
+        return self::$configs[static::resolve($name)] ?? [];
     }
 
     /**
@@ -254,7 +254,7 @@ final class Connection
      */
     public static function close(?string $name = null): void
     {
-        $name = self::resolve($name);
+        $name = static::resolve($name);
 
         unset(self::$instances[$name], self::$drivers[$name], self::$transactions[$name], self::$afterCommit[$name]);
         self::$generation++;
@@ -267,11 +267,11 @@ final class Connection
      */
     public static function reconnect(?string $name = null): PDO
     {
-        $name = self::resolve($name);
+        $name = static::resolve($name);
 
-        self::close($name);
+        static::close($name);
 
-        return self::get($name);
+        return static::get($name);
     }
 
     /**
@@ -325,7 +325,7 @@ final class Connection
      */
     public static function driver(?string $name = null): string
     {
-        $name = self::resolve($name);
+        $name = static::resolve($name);
 
         if (isset(self::$drivers[$name])) {
             return self::$drivers[$name];
@@ -350,11 +350,11 @@ final class Connection
      */
     public static function applyTimezone(string $timezone, ?string $name = null): void
     {
-        $timezone = self::assertTimezone($timezone);
-        $name     = self::resolve($name);
+        $timezone = static::assertTimezone($timezone);
+        $name     = static::resolve($name);
 
-        $pdo    = self::get($name);
-        $driver = self::driver($name);
+        $pdo    = static::get($name);
+        $driver = static::driver($name);
 
         // driver() reports canonical names, so aliases never reach this match.
         $sql = match ($driver) {
@@ -414,9 +414,9 @@ final class Connection
      */
     public static function afterCommit(callable $callback, ?string $name = null): void
     {
-        $name = self::resolve($name);
+        $name = static::resolve($name);
 
-        if (self::transactionLevel($name) === 0) {
+        if (static::transactionLevel($name) === 0) {
             $callback();
             return;
         }
@@ -429,7 +429,7 @@ final class Connection
      */
     public static function transactionLevel(?string $name = null): int
     {
-        return self::$transactions[self::resolve($name)] ?? 0;
+        return self::$transactions[static::resolve($name)] ?? 0;
     }
 
     /**
@@ -439,14 +439,14 @@ final class Connection
      */
     public static function beginTransaction(?string $name = null): void
     {
-        $name  = self::resolve($name);
-        $pdo   = self::get($name);
-        $level = self::transactionLevel($name);
+        $name  = static::resolve($name);
+        $pdo   = static::get($name);
+        $level = static::transactionLevel($name);
 
         if ($level === 0) {
             $pdo->beginTransaction();
         } else {
-            $pdo->exec(self::savepointSql('create', $level, self::driver($name)));
+            $pdo->exec(static::savepointSql('create', $level, static::driver($name)));
         }
 
         self::$transactions[$name] = $level + 1;
@@ -459,19 +459,19 @@ final class Connection
      */
     public static function commit(?string $name = null): void
     {
-        $name  = self::resolve($name);
-        $level = self::transactionLevel($name);
+        $name  = static::resolve($name);
+        $level = static::transactionLevel($name);
 
         if ($level === 0) {
             throw new ConnectionException("No active transaction on connection [{$name}].");
         }
 
-        $pdo = self::get($name);
+        $pdo = static::get($name);
 
         if ($level === 1) {
             $pdo->commit();
         } else {
-            $sql = self::savepointSql('release', $level - 1, self::driver($name));
+            $sql = static::savepointSql('release', $level - 1, static::driver($name));
             // SQL Server has no RELEASE SAVEPOINT — nested commits are a no-op there.
             if ($sql !== null) {
                 $pdo->exec($sql);
@@ -500,21 +500,21 @@ final class Connection
      */
     public static function rollBack(?string $name = null): void
     {
-        $name  = self::resolve($name);
-        $level = self::transactionLevel($name);
+        $name  = static::resolve($name);
+        $level = static::transactionLevel($name);
 
         if ($level === 0) {
             throw new ConnectionException("No active transaction on connection [{$name}].");
         }
 
-        $pdo = self::get($name);
+        $pdo = static::get($name);
 
         if ($level === 1) {
             $pdo->rollBack();
             // Nothing it depended on was stored
             unset(self::$afterCommit[$name]);
         } else {
-            $pdo->exec(self::savepointSql('rollback', $level - 1, self::driver($name)));
+            $pdo->exec(static::savepointSql('rollback', $level - 1, static::driver($name)));
         }
 
         self::$transactions[$name] = $level - 1;
@@ -525,7 +525,7 @@ final class Connection
     // -----------------------------------------------------------------------
 
     /** Resolve an optional connection name to a concrete one. */
-    private static function resolve(?string $name): string
+    protected static function resolve(?string $name): string
     {
         return $name ?? self::$default;
     }
@@ -536,7 +536,7 @@ final class Connection
      * @param 'create'|'release'|'rollback' $action
      * @return ?string Null when the driver has no equivalent statement.
      */
-    private static function savepointSql(string $action, int $index, string $driver): ?string
+    protected static function savepointSql(string $action, int $index, string $driver): ?string
     {
         $point = "laika_sp{$index}";
 
@@ -557,7 +557,7 @@ final class Connection
         };
     }
 
-    private static function createPdo(string $name): PDO
+    protected static function createPdo(string $name): PDO
     {
         $config = self::$configs[$name];
         $driver = DriverFactory::make($config);

@@ -17,7 +17,7 @@
 
         <!--
             "resource" is only a *soft* reserved word (PHP 7.0) and was never
-            enforced. Renaming Laika\Engine\Core\App\Resource would break the
+            enforced. Renaming Laika\Engine\App\Resource would break the
             Laika\Engine\Services\Resource service, Infra, helpers/loader.php, the
             resource:* CLI commands and the docs. Not worth it for a non-rule.
         -->

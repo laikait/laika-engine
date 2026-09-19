@@ -43,10 +43,10 @@ use Laika\Engine\Model\Schema\Grammars\FirebirdGrammar;
  *       $table->string('phone')->nullable();
  *   });
  */
-final class Schema
+class Schema
 {
     /** @var string $connection Database Connection Name */
-    private string $connection = 'default';
+    protected string $connection = 'default';
 
     /**
      * Keyed by *canonical* driver name (see Connection::driver()). Aliases such
@@ -54,7 +54,7 @@ final class Schema
      *
      * @var array<string, class-string<Grammar>>
      */
-    private static array $grammarMap = [
+    protected static array $grammarMap = [
         'mysql'    => MySqlGrammar::class,
         'mariadb'  => MySqlGrammar::class,
         'pgsql'    => PgSqlGrammar::class,
@@ -68,7 +68,7 @@ final class Schema
         'ibase'    => FirebirdGrammar::class,
     ];
 
-    private function __construct(string $connection)
+    protected function __construct(string $connection)
     {
         $this->connection = $connection;
 
@@ -102,13 +102,13 @@ final class Schema
     /** Select a specific connection for schema operations. */
     public static function on(?string $connection = null): self
     {
-        return new self($connection ?? Connection::getDefault());
+        return new static($connection ?? Connection::getDefault());
     }
 
     // // Proxy static calls to a default-connection instance
     // public static function __callStatic(string $method, array $args): mixed
     // {
-    //     return (new self('default'))->$method(...$args);
+    //     return (new static('default'))->$method(...$args);
     // }
 
     // -----------------------------------------------------------------------
@@ -257,7 +257,7 @@ final class Schema
         if (!is_a($grammarClass, Grammar::class, true)) {
             throw new SchemaException("Grammar must extend " . Grammar::class);
         }
-        self::$grammarMap[strtolower($driver)] = $grammarClass;
+        static::$grammarMap[strtolower($driver)] = $grammarClass;
     }
 
     /**
@@ -304,7 +304,7 @@ final class Schema
      * @param bool $enabled
      * @return ?string
      */
-    private function foreignKeyCheckSql(bool $enabled): ?string
+    protected function foreignKeyCheckSql(bool $enabled): ?string
     {
         return match ($this->driverName()) {
             'mysql'     =>  'SET FOREIGN_KEY_CHECKS = ' . ($enabled ? '1' : '0'),
@@ -323,7 +323,7 @@ final class Schema
      * Get PDO Connection
      * @return PDO
      */
-    private function pdo(): PDO
+    protected function pdo(): PDO
     {
         return Connection::get($this->connection);
     }
@@ -332,7 +332,7 @@ final class Schema
      * Get Config
      * @return array
      */
-    private function config(): array
+    protected function config(): array
     {
         return Connection::config($this->connection);
     }
@@ -341,7 +341,7 @@ final class Schema
      * Canonical driver name — never an alias
      * @return string
      */
-    private function driverName(): string
+    protected function driverName(): string
     {
         return Connection::driver($this->connection);
     }
@@ -351,12 +351,12 @@ final class Schema
      * @return Grammar
      * @throws SchemaException
      */
-    private function grammar(): Grammar
+    protected function grammar(): Grammar
     {
         $driver = $this->driverName();
 
-        if (isset(self::$grammarMap[$driver])) {
-            return new self::$grammarMap[$driver]();
+        if (isset(static::$grammarMap[$driver])) {
+            return new static::$grammarMap[$driver]();
         }
 
         // Never guess a dialect — a wrong grammar produces SQL that either fails

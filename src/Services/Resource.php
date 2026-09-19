@@ -16,7 +16,7 @@ use Laika\Engine\Relay\Relay;
 
 /**
  * @method static void   register(string $name, string $path, ?string $base_namespace = null, ?string $contract = null)
- * @method static void   define(\Laika\Engine\Core\App\ResourceDefinition $definition)
+ * @method static void   define(\Laika\Engine\App\ResourceDefinition $definition)
  * @method static void   package(string $composer_file)
  * @method static array  getResources(?string $name = null)
  * @method static array  getClasses(string $name, ?string $contract = null)
@@ -24,7 +24,7 @@ use Laika\Engine\Relay\Relay;
  * @method static array  names()
  * @method static bool   has(string $name)
  * @method static bool   isClassMap(string $name)
- * @method static array  entries(\Laika\Engine\Core\App\ResourceDefinition $definition)
+ * @method static array  entries(\Laika\Engine\App\ResourceDefinition $definition)
  * @method static array  definitions(?string $name = null)
  * @method static string manifestPath()
  * @method static array  compile()

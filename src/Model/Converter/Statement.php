@@ -15,6 +15,8 @@ namespace Laika\Engine\Model\Converter;
 /**
  * One SQL statement lifted out of the input, with enough provenance to point a
  * warning back at it.
+ *
+ * Final on purpose: an immutable value object.
  */
 final class Statement
 {

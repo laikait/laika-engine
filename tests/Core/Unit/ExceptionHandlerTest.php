@@ -6,7 +6,7 @@ namespace Laika\Engine\Core\Tests\Unit;
 
 use ErrorException;
 use PHPUnit\Framework\TestCase;
-use Laika\Engine\Core\Exceptions\Handler;
+use Laika\Engine\Exceptions\Handler;
 
 final class ExceptionHandlerTest extends TestCase
 {

@@ -17,16 +17,16 @@ namespace Laika\Engine\Shield\Config;
  *
  * @package Laika\Engine\Shield\Config
  */
-final class RequestFilterConfig extends SectionConfig
+class RequestFilterConfig extends SectionConfig
 {
     /** @var string[] HTTP methods that should be rejected outright. */
-    private array $blockedMethods = ['TRACE', 'CONNECT'];
+    protected array $blockedMethods = ['TRACE', 'CONNECT'];
 
     /** @var string[] Regex patterns matched against REQUEST_URI. */
-    private array $blockedUriPatterns = [];
+    protected array $blockedUriPatterns = [];
 
     /** @var string[] Regex patterns matched against the User-Agent header. */
-    private array $blockedUserAgents = [
+    protected array $blockedUserAgents = [
         '/sqlmap/i',
         '/nikto/i',
         '/nessus/i',
@@ -36,14 +36,14 @@ final class RequestFilterConfig extends SectionConfig
     ];
 
     /** @var string[] Request headers that MUST be present (lowercase names). */
-    private array $requiredHeaders = [];
+    protected array $requiredHeaders = [];
 
     /** @var array<string,string[]> Map of header name => forbidden regex patterns. */
-    private array $blockedHeaderValues = [];
+    protected array $blockedHeaderValues = [];
 
-    private ?int $contentLengthMax = null;
+    protected ?int $contentLengthMax = null;
 
-    private ?int $contentLengthMin = null;
+    protected ?int $contentLengthMin = null;
 
     /**
      * @param string[]|null $value

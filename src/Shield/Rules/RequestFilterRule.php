@@ -23,6 +23,8 @@ use Laika\Engine\Shield\Support\RequestHelper;
  *  - Missing required headers
  *
  * @package Laika\Engine\Shield\Rules
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class RequestFilterRule implements RuleInterface
 {

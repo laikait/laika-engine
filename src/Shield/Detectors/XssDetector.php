@@ -16,6 +16,8 @@ use Laika\Engine\Shield\Contract\DetectorInterface;
  * query parameters.
  *
  * @package Laika\Engine\Shield\Detectors
+ *
+ * Final on purpose: a security boundary. A subclass could weaken the checks it makes.
  */
 final class XssDetector implements DetectorInterface
 {

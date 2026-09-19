@@ -6,7 +6,7 @@ namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
 use Laika\Engine\Services\Infra;
-use Laika\Engine\Core\Worker\Queue;
+use Laika\Engine\Worker\Queue;
 use Laika\Engine\Queue\Abstracts\Job;
 
 class QueueRetryCommand implements CommandInterface

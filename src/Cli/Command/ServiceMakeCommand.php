@@ -116,7 +116,7 @@ class ServiceMakeCommand implements CommandInterface
             'inputs'        =>  [],
             'params'        =>  [
                                     'name'  =>  'Relay provider class name. Example: Template',
-                                    'class' =>  'Service provider class name. Example: Laika\Engine\Core\App\Template'
+                                    'class' =>  'Service provider class name. Example: Laika\Engine\App\Template'
                                 ]
         ];
     }

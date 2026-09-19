@@ -30,6 +30,10 @@
         <testsuite name="Session">
             <directory>tests/Session</directory>
         </testsuite>
+        <testsuite name="Extensions">
+            <directory>tests/Extensions</directory>
+            <exclude>tests/Extensions/fixtures</exclude>
+        </testsuite>
         <testsuite name="Shield">
             <directory>tests/Shield</directory>
             <exclude>tests/Shield/Stubs</exclude>
