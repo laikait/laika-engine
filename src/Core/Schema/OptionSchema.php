@@ -1,0 +1,79 @@
+<?php
+
+/**
+ * Laika PHP MVC Framework
+ * Author: Showket Ahmed
+ * Email: riyadhtayf@gmail.com
+ * License: MIT
+ * This file is part of the Laika PHP MVC Framework.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+// Namespace
+
+namespace Laika\Engine\Core\Schema;
+
+// Deny Direct Access
+defined('APP_PATH') || http_response_code(403) . die('403 Direct Access Denied!');
+
+use Laika\Engine\Service\Option;
+use Laika\Engine\Model\Schema\Schema;
+use Laika\Engine\Model\Schema\Blueprint;
+use Laika\Engine\Model\Contract\SchemaAbstract;
+use Laika\Engine\Core\Exceptions\OptionException;
+
+class OptionSchema extends SchemaAbstract
+{
+    /** @var string Database Table Name */
+    protected string $table = 'options';
+
+    /** @var string Database Connection Name */
+    protected string $connection = 'default';
+
+    public function up(): void
+    {
+        Schema::on($this->connection)->createIfNotExists($this->table, function (Blueprint $table) {
+            $table->string('op_key');
+            $table->text('op_value');
+            $table->enum('is_default', ['yes', 'no'])->default('no');
+
+            // Indexes
+            $table->primary('op_key');
+        });
+    }
+
+    /**
+     * Default Options
+     * Shared by seed() & OptionModel::install(), Which Seeds Them on Its Own Connection
+     * @return array<string,string|int>
+     */
+    public static function defaults(): array
+    {
+        return [
+            'app_icon'          =>  'icon.png',
+            'app_logo'          =>  'logo.png',
+            'app_name'          =>  'Laika Framework',
+            'app_path'          =>  APP_PATH,
+            'data_limit'        =>  20,
+            'datetime_format'   =>  'Y-M-d H:i:s',
+            'date_format'       =>  'Y-M-d',
+            'time_format'       =>  'H:i:s',
+            'time_zone'         =>  date_default_timezone_get(),
+        ];
+    }
+
+    public function seed(): void
+    {
+        try {
+            foreach (static::defaults() as $k => $v) {
+                Option::insert($k, $v);
+            }
+        } catch (\Throwable $e) {
+            if (DEBUG) {
+                throw new OptionException("Option Insert Failed. {$e->getMessage()}", (int) $e->getCode(), $e);
+            }
+        }
+    }
+}

@@ -1,0 +1,94 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Laika\Engine\Core\Worker;
+
+use Laika\Engine\Model\Connection;
+use Laika\Engine\Queue\Driver\DatabaseDriver;
+use Laika\Engine\Queue\Driver\DatabaseFailedJobProvider;
+use Laika\Engine\Queue\Driver\JsonDriver;
+use Laika\Engine\Queue\Driver\JsonFailedJobProvider;
+use Laika\Engine\Queue\Driver\RedisDriver;
+use Laika\Engine\Queue\Interfaces\FailedJobProviderInterface;
+use Laika\Engine\Queue\Interfaces\QueueDriverInterface;
+
+/**
+ * Resolves the queue driver / failed-job provider from lf-config/queue.php
+ * — same selection logic as vendor/laikait/laika-queue/bin/worker, kept
+ * here so the queue:* CLI commands (retry, failed, flush) can reach the
+ * driver/failer directly without spinning up a full Worker.
+ */
+class Queue
+{
+    /**
+     * @param string $default Driver name used when lf-config/queue.php doesn't set one
+     */
+    public static function driver(string $default = 'json'): QueueDriverInterface
+    {
+        $driverName = strtolower((string) config('queue', 'driver', $default));
+        $connection = (string) config('queue', 'connection', 'default');
+
+        if ($driverName === 'redis') {
+            if (!class_exists(\Redis::class)) {
+                throw new \RuntimeException("queue.driver is 'redis' but the redis extension isn't loaded.");
+            }
+
+            // Connection settings come from lf-config/redis.php via RedisConnection
+            $prefix = trim((string) config('redis', 'prefix', 'laika'), ':') . ':queue';
+
+            return RedisDriver::fromConfig([], $prefix);
+        }
+
+        if ($driverName === 'json') {
+            return new JsonDriver();
+        }
+
+        self::connect($connection);
+        $driver = new DatabaseDriver($connection);
+        return $driver;
+    }
+
+    /**
+     * @param string $default Driver name used when lf-config/queue.php doesn't set one
+     */
+    public static function failedProvider(string $default = 'database'): FailedJobProviderInterface
+    {
+        $driverName = strtolower((string) config('queue', 'driver', $default));
+        $connection = (string) config('queue', 'connection', 'default');
+        $failedDriverName = strtolower((string) config(
+            'queue',
+            'failed_driver',
+            $driverName === 'database' ? 'database' : 'json'
+        ));
+
+        if ($failedDriverName === 'database') {
+            // The table is not created here: see FailedJobModelSchema::up()
+            self::connect($connection);
+            return new DatabaseFailedJobProvider($connection);
+        }
+
+        return new JsonFailedJobProvider();
+    }
+
+    /**
+     * Register the queue's database connection under its own name
+     *
+     * An unnamed Connection::add() registers under the default name, so a
+     * queue.connection other than 'default' used to overwrite 'default'.
+     */
+    private static function connect(string $connection): void
+    {
+        if (Connection::has($connection)) {
+            return;
+        }
+
+        $config = config('database', $connection);
+
+        if (!is_array($config) || $config === []) {
+            throw new \RuntimeException("Database connection [{$connection}] is not defined in lf-config/database.php.");
+        }
+
+        Connection::add($config, $connection);
+    }
+}

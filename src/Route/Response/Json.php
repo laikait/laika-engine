@@ -1,0 +1,29 @@
+<?php
+/**
+ * Laika Framework
+ * Author: Showket Ahmed
+ * Email: riyadhtayf@gmail.com
+ * License: MIT
+ * This file is part of the Laika PHP Framework.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Laika\Engine\Route\Response;
+
+use Laika\Engine\Service\Response;
+
+final class Json
+{
+    /**
+     * Render Html
+     * @param string $str
+     * @return void
+     */
+    public static function render(string $str): void
+    {
+        // Preserve an already-set status; json() would otherwise default it to 200.
+        Response::json(json_decode($str), Response::getStatus())->send();
+    }
+}
