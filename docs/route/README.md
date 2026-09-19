@@ -10,7 +10,7 @@ composer require laikait/laika-route
 
 laika-core requires it, so a Laika app already has it. Registering routes needs only PHP 8.1+.
 
-`Url::dispatch()` and `Asset::serve()` additionally call the `Laika\Engine\Service\*` relays
+`Url::dispatch()` and `Asset::serve()` additionally call the `Laika\Engine\Services\*` relays
 (`Response`, `CORS`, `Config`, `Infra`, `MimeType`), which this package deliberately does
 **not** require: laika-core requires laika-route, so depending on it here would be a
 cycle. They are resolved at runtime inside a booted Laika app, and the test suite stands
@@ -137,7 +137,7 @@ Url::globalPipeline([\Laika\Engine\Shield\Pipeline\ShieldPipeline::class]);  // 
 namespace App\Pipeline;
 
 use Laika\Engine\Route\Contracts\PipelineInterface;
-use Laika\Engine\Service\Response;
+use Laika\Engine\Services\Response;
 
 class Role implements PipelineInterface
 {
@@ -204,7 +204,7 @@ Short names resolve to `App\Filter\`. Filter args are visible to later filters o
 ```php
 Url::fallback('admin', fn () => '<h1>Admin page not found</h1>');   // under /admin
 Url::fallback(null, function () {                                   // everything else
-    \Laika\Engine\Service\Response::setStatus(404);
+    \Laika\Engine\Services\Response::setStatus(404);
     return '<h1>Page not found</h1>';
 });
 ```

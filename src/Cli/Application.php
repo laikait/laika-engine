@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Cli;
 
-use Laika\Engine\Service\Infra;
+use Laika\Engine\Services\Infra;
 use Laika\Engine\Cli\Command\Message;
 use Laika\Engine\Cli\Command\Argument;
 use Laika\Engine\Cli\Command\HelpCommand;

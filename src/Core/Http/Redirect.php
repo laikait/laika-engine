@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Http;
 
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Url;
 use Laika\Engine\Session\Session;
 use Laika\Engine\Core\Exceptions\HttpException;
 

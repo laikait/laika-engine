@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Helper;
 
-use Laika\Engine\Service\File;
+use Laika\Engine\Services\File;
 use RuntimeException;
 use InvalidArgumentException;
 

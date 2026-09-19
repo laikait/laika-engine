@@ -6,7 +6,7 @@ namespace Laika\Engine\Cli\Command;
 
 use Throwable;
 use Laika\Engine\Cli\Table;
-use Laika\Engine\Service\Resource;
+use Laika\Engine\Services\Resource;
 use Laika\Engine\Cli\Contracts\CommandInterface;
 
 class ResourceListCommand implements CommandInterface

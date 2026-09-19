@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Laika\Engine\Route\Response;
 
 use DOMDocument;
-// use Laika\Engine\Service\{CSRF, Response};
-use Laika\Engine\Service\Response;
-use Laika\Engine\Service\CSRF;
+// use Laika\Engine\Services\{CSRF, Response};
+use Laika\Engine\Services\Response;
+use Laika\Engine\Services\CSRF;
 
 final class Html
 {

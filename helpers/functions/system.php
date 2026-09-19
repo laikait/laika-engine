@@ -11,21 +11,21 @@
 
 declare(strict_types=1);
 
-use Laika\Engine\Service\Url;
-use Laika\Engine\Service\Hook;
-use Laika\Engine\Service\CSRF;
-use Laika\Engine\Service\Meta;
+use Laika\Engine\Services\Url;
+use Laika\Engine\Services\Hook;
+use Laika\Engine\Services\CSRF;
+use Laika\Engine\Services\Meta;
 use Laika\Engine\Route\Handler;
-use Laika\Engine\Service\Asset;
+use Laika\Engine\Services\Asset;
 // The concrete class, not the relay: version() and appendVersion() are pure
 // statics, so they need no container and no instance resolution.
 use Laika\Engine\Core\Template\Asset as AssetFile;
-use Laika\Engine\Service\AppKey;
-use Laika\Engine\Service\Option;
-use Laika\Engine\Service\Config;
-use Laika\Engine\Service\Cache;
-use Laika\Engine\Service\Request;
-use Laika\Engine\Service\Context;
+use Laika\Engine\Services\AppKey;
+use Laika\Engine\Services\Option;
+use Laika\Engine\Services\Config;
+use Laika\Engine\Services\Cache;
+use Laika\Engine\Services\Request;
+use Laika\Engine\Services\Context;
 use Laika\Engine\Session\Session;
 use Laika\Engine\Model\Connection;
 

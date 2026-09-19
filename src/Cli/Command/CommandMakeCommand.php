@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Stub;
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\Directory;
 use Laika\Engine\Cli\Contracts\CommandInterface;
 
 class CommandMakeCommand implements CommandInterface

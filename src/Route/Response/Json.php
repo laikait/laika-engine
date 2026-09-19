@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Route\Response;
 
-use Laika\Engine\Service\Response;
+use Laika\Engine\Services\Response;
 
 final class Json
 {

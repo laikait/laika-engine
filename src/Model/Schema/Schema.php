@@ -74,8 +74,8 @@ final class Schema
 
         // Optional host-framework integration — neither Init nor Config is a
         // declared dependency, so both must be guarded before use.
-        if (class_exists("\\Laika\\Engine\\Service\\Init")) {
-            \Laika\Engine\Service\Init::db($this->connection);
+        if (class_exists("\\Laika\\Engine\\Services\\Init")) {
+            \Laika\Engine\Services\Init::db($this->connection);
             return;
         }
 
@@ -83,10 +83,10 @@ final class Schema
             return;
         }
 
-        if (class_exists("\\Laika\\Engine\\Service\\Config")) {
+        if (class_exists("\\Laika\\Engine\\Services\\Config")) {
             // Register under the requested name, not 'default' — otherwise
             // Schema::on('analytics') would configure the wrong connection.
-            Connection::add(\Laika\Engine\Service\Config::get('database', $this->connection), $this->connection);
+            Connection::add(\Laika\Engine\Services\Config::get('database', $this->connection), $this->connection);
             return;
         }
 

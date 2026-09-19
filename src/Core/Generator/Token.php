@@ -15,9 +15,9 @@ namespace Laika\Engine\Core\Generator;
 
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
-use Laika\Engine\Service\Url;
-use Laika\Engine\Service\Vault;
-use Laika\Engine\Service\AppKey;
+use Laika\Engine\Services\Url;
+use Laika\Engine\Services\Vault;
+use Laika\Engine\Services\AppKey;
 
 /*======================================================================================*/
 /*================================= MOVED TO GENERATOR =================================*/

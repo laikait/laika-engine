@@ -36,7 +36,7 @@ use Laika\Engine\Route\Contracts\PipelineInterface;
  * Public method names must not collide with the static methods on Laika\Engine\Relay\Relay
  * (classes, bindings, swap, relayRoot, setRegistry, getRegistry, swapRegistry,
  * clearResolvedInstance). Relay resolves those itself instead of forwarding, so a
- * colliding name would silently do the wrong thing through Laika\Engine\Service\Resource.
+ * colliding name would silently do the wrong thing through Laika\Engine\Services\Resource.
  */
 final class Resource
 {

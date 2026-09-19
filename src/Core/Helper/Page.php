@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Helper;
 
-use Laika\Engine\Service\{Url, Request};
+use Laika\Engine\Services\{Url, Request};
 
 class Page
 {

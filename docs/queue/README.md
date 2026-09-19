@@ -616,7 +616,7 @@ and expect it to arbitrate between hosts.
 
 Job payloads are restored with PHP's `unserialize()`. To prevent PHP Object Injection — an attacker-controlled payload instantiating arbitrary classes to build a gadget chain — `Job::unserializePayload()` only instantiates classes explicitly registered as trusted. The default list is **empty**, so it throws rather than silently unserializing something unexpected.
 
-**In a Laika app this is handled for you.** `bin/worker` and `queue:retry` both register every `Job` subclass discovered under `lf-app/Job` on startup, via `Laika\Engine\Service\Infra::getQueueJobsClasses()` — the same lookup `php laika job:list` uses. Discovery only admits classes that genuinely extend `Job`, so this stays much narrower than trusting the codebase at large. No config needed.
+**In a Laika app this is handled for you.** `bin/worker` and `queue:retry` both register every `Job` subclass discovered under `lf-app/Job` on startup, via `Laika\Engine\Services\Infra::getQueueJobsClasses()` — the same lookup `php laika job:list` uses. Discovery only admits classes that genuinely extend `Job`, so this stays much narrower than trusting the codebase at large. No config needed.
 
 Register manually for job classes living outside `lf-app/Job`, or when using this package standalone:
 
@@ -637,7 +637,7 @@ Do it once at bootstrap, before any `pop()`. Calls are additive and de-duplicate
 
 - **No stalled-job reaper for `DatabaseDriver`/`JsonDriver`.** A worker killed mid-job leaves `reserved_at` set forever, and that job is never picked up again. `RedisDriver::pop()` self-heals via its reserved sweep (`reserve_timeout`, default 90s); a cron-callable `reapStalled()` for the other two is the obvious next addition.
 - **`DatabaseDriver::pop()` has no locking clause** — see [Concurrency caveat](#concurrency-caveat).
-- **No `QueueRelay` / `QueueServiceProvider`.** There's no facade in `Laika\Engine\Service` yet; use `Laika\Engine\Core\Worker\Queue` as shown in [Dispatching jobs](#dispatching-jobs).
+- **No `QueueRelay` / `QueueServiceProvider`.** There's no facade in `Laika\Engine\Services` yet; use `Laika\Engine\Core\Worker\Queue` as shown in [Dispatching jobs](#dispatching-jobs).
 - **`Job::$delay` and `Job::$queue` are not honoured by `push()`** — pass both as arguments instead. See [Two traps](#two-traps-worth-knowing).
 - **No batching, chaining, or unique-job support.**
 

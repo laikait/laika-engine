@@ -13,9 +13,9 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Http;
 
-use Laika\Engine\Service\Cookie;
-use Laika\Engine\Service\Visitor;
-use Laika\Engine\Service\AppKey;
+use Laika\Engine\Services\Cookie;
+use Laika\Engine\Services\Visitor;
+use Laika\Engine\Services\AppKey;
 use Laika\Engine\Core\Exceptions\CSRFException;
 
 defined('APP_PATH') || http_response_code(403) . die('Direct access not allowed.');

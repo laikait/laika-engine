@@ -8,7 +8,7 @@ use Laika\Engine\Cli\Contracts\CommandInterface;
 use Laika\Engine\Cli\Table;
 use Laika\Engine\Route\Path;
 use Laika\Engine\Route\Handler;
-use Laika\Engine\Service\Infra;
+use Laika\Engine\Services\Infra;
 
 class RouteListCommand implements CommandInterface
 {

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Route;
 
-use Laika\Engine\Service\Config;
-use Laika\Engine\Service\MimeType;
-use Laika\Engine\Service\Response as ResponseService;
+use Laika\Engine\Services\Config;
+use Laika\Engine\Services\MimeType;
+use Laika\Engine\Services\Response as ResponseService;
 use Throwable;
 
 /**

@@ -9,9 +9,9 @@ use Laika\Engine\Core\Http\CSRF as CsrfObject;
 use Laika\Engine\Core\Http\Response as ResponseObject;
 use Laika\Engine\Core\Pipeline\CachePipeline;
 use Laika\Engine\Route\Handler;
-use Laika\Engine\Service\CSRF;
-use Laika\Engine\Service\Cache;
-use Laika\Engine\Service\Response;
+use Laika\Engine\Services\CSRF;
+use Laika\Engine\Services\Cache;
+use Laika\Engine\Services\Response;
 use PHPUnit\Framework\TestCase;
 
 /**

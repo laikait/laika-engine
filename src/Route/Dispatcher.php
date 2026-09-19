@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Route;
 
-use Laika\Engine\Service\CORS;
-use Laika\Engine\Service\Infra;
-use Laika\Engine\Service\Response as ResponseService;
+use Laika\Engine\Services\CORS;
+use Laika\Engine\Services\Infra;
+use Laika\Engine\Services\Response as ResponseService;
 
 class Dispatcher
 {

@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Core\Helper;
 
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\Directory;
 use RuntimeException;
 
 class File

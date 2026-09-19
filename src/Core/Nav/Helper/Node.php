@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Nav\Helper;
 
 use Laika\Engine\Route\Handler;
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Url;
 
 abstract class Node
 {

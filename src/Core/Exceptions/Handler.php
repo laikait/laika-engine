@@ -15,7 +15,7 @@ namespace Laika\Engine\Core\Exceptions;
 
 use Throwable;
 use RuntimeException;
-use Laika\Engine\Service\Directory;
+use Laika\Engine\Services\Directory;
 
 class Handler
 {

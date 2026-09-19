@@ -2,7 +2,7 @@
 
 ## Request
 
-**Relay:** `Laika\Engine\Service\Request` (`request`). **Class:** `Laika\Engine\Core\Http\Request`.
+**Relay:** `Laika\Engine\Services\Request` (`request`). **Class:** `Laika\Engine\Core\Http\Request`.
 
 Parsed once per request. The constructor reads:
 - **Query string and form fields:** `$_GET` and `$_POST`, passed through a sanitizer (see [Sanitizers](#sanitizers))
@@ -12,7 +12,7 @@ Parsed once per request. The constructor reads:
 - **Method:** `REQUEST_METHOD`, overridden to `PUT`, `PATCH` or `DELETE` when the form or JSON body carries a `_method` field with one of those values. That's how HTML forms send non-POST verbs.
 
 ```php
-use Laika\Engine\Service\Request;
+use Laika\Engine\Services\Request;
 
 $email = Request::input('email');
 $data  = Request::only(['name', 'email']);
@@ -48,7 +48,7 @@ if (Request::isPost() && Request::has('title')) { /* ... */ }
 > **Note:** by default every string input is **HTML-encoded**. `Tom & Jerry` arrives as `Tom &amp; Jerry`, and `O'Neil` as `O&apos;Neil`. That makes values safe to echo, but they're stored encoded and their lengths include the entities. If you escape on output yourself, swap in a request that doesn't encode, early (for example in a hook file), before anything reads the request:
 >
 > ```php
-> use Laika\Engine\Service\Request;
+> use Laika\Engine\Services\Request;
 > use Laika\Engine\Core\Sanitizer\NullSanitizer;
 >
 > Request::swap(new \Laika\Engine\Core\Http\Request(new NullSanitizer()));
@@ -125,12 +125,12 @@ An unknown rule name throws `InvalidArgumentException`.
 
 ## Response
 
-**Relay:** `Laika\Engine\Service\Response` (`response`). **Class:** `Laika\Engine\Core\Http\Response`.
+**Relay:** `Laika\Engine\Services\Response` (`response`). **Class:** `Laika\Engine\Core\Http\Response`.
 
 Holds the status, content type, headers and body for the current response. Controllers usually just return a string; laika-route reads the content type set here to choose how to render it. You can also build and send a response yourself.
 
 ```php
-use Laika\Engine\Service\Response;
+use Laika\Engine\Services\Response;
 
 return Response::json(['ok' => true], 201)->getBody();
 
@@ -158,10 +158,10 @@ Response::setStatus(404)->setHeader('X-Reason', 'missing');
 
 ## Redirect
 
-**Relay:** `Laika\Engine\Service\Redirect` (`redirect`). **Class:** `Laika\Engine\Core\Http\Redirect`.
+**Relay:** `Laika\Engine\Services\Redirect` (`redirect`). **Class:** `Laika\Engine\Core\Http\Redirect`.
 
 ```php
-use Laika\Engine\Service\Redirect;
+use Laika\Engine\Services\Redirect;
 
 Redirect::with('Profile saved.', true)->to('profile.show', ['id' => 7]);
 Redirect::back();
@@ -182,13 +182,13 @@ Both redirect methods send a `Location` header and **exit**. Allowed codes are 3
 
 ## CORS
 
-**Relay:** `Laika\Engine\Service\CORS` (`cors`). **Class:** `Laika\Engine\Core\Http\CORS` (static).
+**Relay:** `Laika\Engine\Services\CORS` (`cors`). **Class:** `Laika\Engine\Core\Http\CORS` (static).
 
 laika-route calls `CORS::handle()` at the start of every request. Configure it in a hook file, which runs before routing:
 
 ```php
 // lf-hooks/cors.php
-use Laika\Engine\Service\CORS;
+use Laika\Engine\Services\CORS;
 
 CORS::origins(['https://app.example.com']);
 CORS::credentials(true);
@@ -217,12 +217,12 @@ To hide the `X-Powered-By` header, pass your own list to `securityHeaders()` wit
 
 ## CSRF
 
-**Relay:** `Laika\Engine\Service\CSRF` (`csrf`). **Class:** `Laika\Engine\Core\Http\CSRF`.
+**Relay:** `Laika\Engine\Services\CSRF` (`csrf`). **Class:** `Laika\Engine\Core\Http\CSRF`.
 
 Stateless, signed, single-use tokens.
 
 ```php
-use Laika\Engine\Service\CSRF;
+use Laika\Engine\Services\CSRF;
 
 echo CSRF::field();                    // <input type="hidden" name="_csrf" value="…">
 

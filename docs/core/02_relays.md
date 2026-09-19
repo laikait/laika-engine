@@ -2,10 +2,10 @@
 
 ## How a Relay Resolves
 
-A relay is a class in the `Laika\Engine\Service` namespace that extends `Laika\Engine\Relay\Relay`. It has no logic of its own. `getRelayAccessor()` names a container key, and every static call is forwarded to the instance the container holds for that key:
+A relay is a class in the `Laika\Engine\Services` namespace that extends `Laika\Engine\Relay\Relay`. It has no logic of its own. `getRelayAccessor()` names a container key, and every static call is forwarded to the instance the container holds for that key:
 
 ```php
-use Laika\Engine\Service\Url;
+use Laika\Engine\Services\Url;
 
 Url::base();          // same as: $registry->make('url')->base()
 ```
@@ -34,7 +34,7 @@ Sharing either of those would hand every caller the same half-used object.
 
 ## Relay List
 
-| Relay (`Laika\Engine\Service\…`) | Key | Class | Lifetime | Page |
+| Relay (`Laika\Engine\Services\…`) | Key | Class | Lifetime | Page |
 |---|---|---|---|---|
 | `Activity` | `activity` | `Laika\Engine\Core\Log\Activity` | singleton | [Data](10_data.md#activity-log) |
 | `AppKey` | `app.key` | `Laika\Engine\Core\App\Key` | singleton | [Config](05_config-and-app.md#app-key) |

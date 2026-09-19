@@ -89,7 +89,7 @@ Every render receives these variables, computed at render time. A variable you `
 
 ## Asset
 
-**Relay:** `Laika\Engine\Service\Asset` (`template.asset`). **Class:** `Laika\Engine\Core\Template\Asset` (static). **Helpers:** `enqueue_style()`, `enqueue_script()`, `print_styles()`, `print_scripts()`.
+**Relay:** `Laika\Engine\Services\Asset` (`template.asset`). **Class:** `Laika\Engine\Core\Template\Asset` (static). **Helpers:** `enqueue_style()`, `enqueue_script()`, `print_styles()`, `print_scripts()`.
 
 | Method | Does |
 |---|---|
@@ -102,7 +102,7 @@ Relative sources resolve against `Url::base()`. A handle registered twice keeps 
 
 ## Meta
 
-**Relay:** `Laika\Engine\Service\Meta` (`template.meta`). **Class:** `Laika\Engine\Core\Template\Meta` (static). **Helpers:** `enqueue_meta()`, `print_metas()`.
+**Relay:** `Laika\Engine\Services\Meta` (`template.meta`). **Class:** `Laika\Engine\Core\Template\Meta` (static). **Helpers:** `enqueue_meta()`, `print_metas()`.
 
 | Method | Does |
 |---|---|
@@ -111,7 +111,7 @@ Relative sources resolve against `Url::base()`. A handle registered twice keeps 
 
 ## Context
 
-**Relay:** `Laika\Engine\Service\Context` (`template.context`). **Class:** `Laika\Engine\Core\Template\Context` (static). **Helpers:** `context_add()`, `context_get()`.
+**Relay:** `Laika\Engine\Services\Context` (`template.context`). **Class:** `Laika\Engine\Core\Template\Context` (static). **Helpers:** `context_add()`, `context_get()`.
 
 A request-wide key/value store for passing data to templates from anywhere: pipelines, hooks, services.
 
@@ -125,12 +125,12 @@ Keys must match `\w+` and are lowercased; anything else throws `ContextException
 
 ## Nav
 
-**Relay:** `Laika\Engine\Service\Nav` (`nav`). **Classes:** `Laika\Engine\Core\Nav\Builder`, `Laika\Engine\Core\Nav\Helper\Item`.
+**Relay:** `Laika\Engine\Services\Nav` (`nav`). **Classes:** `Laika\Engine\Core\Nav\Builder`, `Laika\Engine\Core\Nav\Helper\Item`.
 
 Menus built from named routes. The active item is detected from the current URL.
 
 ```php
-use Laika\Engine\Service\Nav;
+use Laika\Engine\Services\Nav;
 
 Nav::add('Dashboard', 'dashboard')->icon('bi bi-speedometer');
 Nav::add('Orders', 'orders.index')
@@ -161,7 +161,7 @@ The full guide, covering active-state rules, conditional display, styling and se
 
 ## Icon
 
-**Relay:** `Laika\Engine\Service\Icon` (`icon`). **Class:** `Laika\Engine\Core\Generator\Icon` (static).
+**Relay:** `Laika\Engine\Services\Icon` (`icon`). **Class:** `Laika\Engine\Core\Generator\Icon` (static).
 
 Inline SVG icons (Bootstrap Icons path data, MIT). Nothing is loaded from a CDN, and icons inherit the text colour through `currentColor`.
 
