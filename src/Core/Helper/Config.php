@@ -1,0 +1,297 @@
+<?php
+
+/**
+ * Laika Framework
+ * Author: Showket Ahmed
+ * Email: riyadhtayf@gmail.com
+ * License: MIT
+ * This file is part of the Laika PHP MVC Framework.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace Laika\Engine\Core\Helper;
+
+use Laika\Engine\Service\{Directory, File};
+use RuntimeException;
+
+class Config
+{
+    /** @var array{string:mixed} $config Contains Config Vars */
+    private static array $config = [];
+
+    /** @var string $path */
+    private static string $path = APP_PATH . '/lf-config';
+
+    ##########################################################################
+    /* -------------------------- EXTERNAL API ---------------------------- */
+    ##########################################################################
+
+    /**
+     * Forget The Loaded Config Files
+     *
+     * Every lf-config file is read once per process. A worker that runs many
+     * jobs in one process must call this between them, or a config change is
+     * never seen for the life of the worker. The next read loads them again.
+     *
+     * @return void
+     */
+    public static function flush(): void
+    {
+        self::$config = [];
+    }
+
+    /**
+     * Get Config Value
+     * @param string $name Config file name (without extension)
+     * @param ?string $key Config key (optional)
+     * @param mixed $default Default value if not found
+     * @return mixed
+     */
+    public static function get(string $name, ?string $key = null, mixed $default = null): mixed
+    {
+        // Initiate
+        self::init();
+        $name = strtolower(trim($name));
+
+        // Get Value
+        if ($key !== null) {
+            // set(), pop() and has() all lowercase the key; get() did not, so a
+            // key written as APP_NAME was stored as app_name and never read back.
+            return self::$config[$name][strtolower(trim($key))] ?? $default;
+        }
+        return self::$config[$name] ?? $default;
+    }
+
+    /**
+     * Get All Configs
+     * @return mixed
+     */
+    public static function all(): mixed
+    {
+        // Initiate
+        self::init();
+        return self::$config;
+    }
+
+    /**
+     * Modify a Config Value
+     * @param string $name Config file name (without extension)
+     * @param string $key Config key (optional)
+     * @param null|int|float|string|bool|array $value Value to Set
+     * @return void
+     * @throws RuntimeException
+     */
+    public static function set(string $name, string $key, int|float|string|bool|array|null $value): void
+    {
+        // Initiate
+        self::init();
+        $name = strtolower(trim($name));
+        $key = strtolower(trim($key));
+
+        $file = CONFIG_PATH . DS . "{$name}.php";
+
+        if (!File::exists($file)) {
+            throw new RuntimeException("Config File [{$name}] Does Not Exist.");
+        }
+
+        // Ensure config exists in memory
+        if (!isset(self::$config[$name]) || !is_array(self::$config[$name])) {
+            self::$config[$name] = [];
+        }
+
+        // Update in memory
+        self::$config[$name][$key] = $value;
+
+        // Rebuild file content with short array syntax
+        $content = self::make(self::$config[$name]);
+
+        if (!File::write($content, $file, LOCK_EX)) {
+            throw new RuntimeException("Config Write Failed: [{$name}]");
+        }
+    }
+
+    // Check Name & Key Config Exists
+    /**
+     * @param string $name Config file name (without extension)
+     * @param string $key Config key (optional)
+     * @return bool
+     * @throws RuntimeException
+     */
+    public static function has(string $name, ?string $key = null): bool
+    {
+        // Initiate
+        self::init();
+        $name = strtolower(trim($name));
+
+        // Indexing self::$config[$name] unguarded made the one method whose job
+        // is answering "does this exist?" throw a TypeError when it did not.
+        if (!array_key_exists($name, self::$config)) {
+            return false;
+        }
+
+        if ($key === null) {
+            return true;
+        }
+
+        return is_array(self::$config[$name])
+            && array_key_exists(strtolower(trim($key)), self::$config[$name]);
+    }
+
+    /**
+     * Delete a Config Key
+     * @param string $name Config file name (without extension)
+     * @param string $key Config key (optional)
+     * @return bool
+     * @throws RuntimeException
+     */
+    public static function pop(string $name, string $key): bool
+    {
+        // Initiate
+        self::init();
+        $name = strtolower(trim($name));
+        $key = strtolower(trim($key));
+
+        $file = CONFIG_PATH . DS . "{$name}.php";
+
+        if (!File::exists($file)) {
+            throw new RuntimeException("Config File [{$name}] Does Not Exist.");
+        }
+
+        // Ensure config exists in memory
+        if (!isset(self::$config[$name]) || !is_array(self::$config[$name])) {
+            return false;
+        }
+
+        // Remove From memory
+        unset(self::$config[$name][$key]);
+
+        // Rebuild file content with short array syntax
+        $content = self::make(self::$config[$name]);
+
+        if (!File::write($content, $file, LOCK_EX)) {
+            throw new RuntimeException("Config Write Failed: [{$name}]");
+        }
+        return true;
+    }
+
+    /**
+     * Create A New Config File
+     * @param string $name Name of the Config to Make Config File
+     * @param array $data Data to insert in Config File
+     * @return bool
+     * @throws RuntimeException
+     */
+    public static function create(string $name, array $data): bool
+    {
+        // Initiate
+        self::init();
+        $name = trim(strtolower($name));
+
+        $file = CONFIG_PATH . DS . "{$name}.php";
+
+        // Check File Already Exist
+        if (File::exists($file)) {
+            throw new RuntimeException("Config File [{$name}] Already Exists.");
+        }
+
+        self::$config[$name] = $data;
+
+        // Make Array Values
+        $content = self::make($data);
+        // Create Config File
+        if (!File::write($content, $file, LOCK_EX)) {
+            throw new RuntimeException("Config [{$name}] Write Failed!");
+        }
+        return true;
+    }
+
+    ####################################################################################
+    ## ------------------------------- INTERNAL API --------------------------------- ##
+    ####################################################################################
+
+    /**
+     * Initiate Config
+     * @return void
+     */
+    private static function init(): void
+    {
+        if (!empty(self::$config)) {
+            return;
+        }
+
+        // Make Config Directory if Not Exists
+        Directory::make(CONFIG_PATH);
+
+        $files = Directory::files(CONFIG_PATH, 'php');
+
+        foreach ($files as $file) {
+            if (is_file($file)) {
+                $basename = strtolower(basename($file, '.php'));
+
+                if ($basename != 'providers') {
+                    self::$config[$basename] = require $file;
+                }
+            }
+        }
+    }
+
+    /**
+     * Export a value into short array-friendly PHP syntax
+     * @param null|int|float|string|bool $value Value to Export
+     * @return string
+     */
+    private static function exportValue(int|float|string|bool|null $value): string
+    {
+        return match (true) {
+            is_null($value)   => 'null',
+            is_bool($value)   => $value ? 'true' : 'false',
+            is_int($value)    => (string) $value,
+            // var_export() keeps full precision and avoids the scientific
+            // notation a plain (string) cast produces for large/small floats.
+            is_float($value)  => var_export($value, true),
+            is_string($value) => "'" . str_replace("'", "\\'", $value) . "'",
+            default           => 'null',
+        };
+    }
+
+    /**
+     * Allign Key Values From Array
+     * @param array $array Key Value Pairs to Make Content
+     * @param int $spaces Howq Many Spaces Before Array Values
+     * @return string
+     */
+    private static function allign(array $array, int $spaces = 4): string
+    {
+        $content = "[\n";
+        foreach ($array as $key => $value) {
+            if (is_array($value)) {
+                $content .= str_repeat(' ', $spaces * 2) . str_repeat(' ', $spaces) . "'{$key}' => " . trim(self::allign($value, $spaces + 4), ';') . ",\n\n";
+            } else {
+                $value = self::exportValue($value);
+                $content .= str_repeat(' ', $spaces * 2) . "'{$key}' => {$value},\n";
+            }
+        }
+        return "{$content}" . str_repeat(' ', $spaces) . "];";
+    }
+
+    /**
+     * Default Content
+     */
+    private static function defaultContent(): string
+    {
+        return "<?php\n/**\n* Laika PHP MVC Framework\n* Author: Showket Ahmed\n* Email: riyadhtayf@gmail.com\n* License: MIT\n* This file is part of the Laika PHP MVC Framework.\n* For the full copyright and license information, please view the LICENSE file that was distributed with this source code.\n*/\n\ndeclare(strict_types=1);\n\n// Deny Direct Access\ndefined('APP_PATH') || http_response_code(403).die('403 Direct Access Denied!');\n\nreturn ";
+    }
+
+    /**
+     * Make Config File Contens
+     * @param array $array Key Value Pairs to Make Content
+     * @param int $spaces Howq Many Spaces Before Array Values
+     * @return string
+     */
+    private static function make(array $array, int $spaces = 4): string
+    {
+        return self::defaultContent() . self::allign($array, $spaces);
+    }
+}

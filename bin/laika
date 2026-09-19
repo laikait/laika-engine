@@ -1,0 +1,53 @@
+#!/usr/bin/env php
+<?php
+
+use Laika\Engine\Cli\Application;
+
+/**
+ * Resolve APP_PATH (the Laika project root).
+ *
+ * This file runs in two very different contexts:
+ *
+ *  1. Local install — vendor/laikait/laika-cli/bin/laika, either via the
+ *     project's own root "laika" proxy or Composer's generated
+ *     vendor/bin/laika proxy (both plain includes, so __DIR__ here is
+ *     unaffected). 4 levels up from bin/ is the app root, where
+ *     lf-boot/app.php lives.
+ *
+ *  2. Global install — invoked as `laika` from anywhere on the system after
+ *     `composer global require laikait/laika-cli`. This file then lives
+ *     under the global Composer home, nowhere near the project, so the
+ *     root is instead resolved by walking up from the current working
+ *     directory until a Laika project (lf-boot/app.php) is found.
+ */
+if (!defined('APP_PATH')) {
+    $local = realpath(__DIR__ . '/../../../../');
+
+    if ($local && is_file($local . '/lf-boot/app.php')) {
+        define('APP_PATH', $local);
+    } else {
+        $dir = getcwd();
+
+        while ($dir !== false) {
+            if (is_file($dir . '/lf-boot/app.php')) {
+                define('APP_PATH', $dir);
+                break;
+            }
+
+            $parent = dirname($dir);
+            $dir = ($parent === $dir) ? false : $parent;
+        }
+    }
+}
+
+if (!defined('APP_PATH')) {
+    fwrite(STDERR, "\nERROR: This is not a Laika project (lf-boot/app.php not found).\n");
+    fwrite(STDERR, "Run \"laika\" from your Laika project root, or a sub-directory of it.\n\n");
+    exit(1);
+}
+
+require APP_PATH . '/lf-boot/app.php';
+
+$app = new Application(APP_PATH);
+
+exit($app->run($argv));

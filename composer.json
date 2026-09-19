@@ -1,0 +1,123 @@
+{
+    "name": "laikait/laika-engine",
+    "description": "Laika PHP Framework Engine: core, routing, models, relay container, sessions, auth, cache, queue, mail, security and CLI in one package",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laika",
+        "framework",
+        "mvc",
+        "router",
+        "orm",
+        "queue",
+        "cache"
+    ],
+    "authors": [
+        {
+            "name": "Laika IT",
+            "email": "strblackhawk@gmail.com"
+        },
+        {
+            "name": "Showket Ahmed",
+            "email": "riyadhtayf@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=8.1",
+        "ext-json": "*",
+        "ext-mbstring": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "aws/aws-sdk-php": "3.394.*",
+        "filp/whoops": "2.18.*",
+        "firebase/php-jwt": "7.1.*",
+        "geoip2/geoip2": "^3",
+        "phpmailer/phpmailer": "^7.1",
+        "twig/twig": "3.28.*"
+    },
+    "require-dev": {
+        "composer/composer": "^2.0",
+        "dealerdirect/phpcodesniffer-composer-installer": "^1.1",
+        "friendsofphp/php-cs-fixer": "^3.89",
+        "phpcompatibility/php-compatibility": "dev-develop",
+        "phpunit/phpunit": "^10.5",
+        "squizlabs/php_codesniffer": "^4.0.2"
+    },
+    "suggest": {
+        "ext-redis": "To use the redis cache, session or queue driver",
+        "ext-memcached": "To use the memcached cache or session driver",
+        "ext-pcntl": "Enables graceful shutdown and per-job timeout in the queue worker (Linux/macOS only)",
+        "ext-posix": "Required alongside pcntl for signal handling (Linux/macOS only)",
+        "league/oauth2-client": "Required only if you use PHPMailer's bundled OAuth class for XOAUTH2"
+    },
+    "autoload": {
+        "files": [
+            "helpers/loader.php"
+        ],
+        "psr-4": {
+            "Laika\\Engine\\Service\\": "services/",
+            "Laika\\Engine\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Laika\\Engine\\Cache\\Tests\\": "tests/Cache/",
+            "Laika\\Engine\\Core\\Tests\\": "tests/Core/",
+            "Laika\\Engine\\Model\\Tests\\": "tests/Model/",
+            "Laika\\Engine\\Route\\Tests\\": "tests/Route/",
+            "Laika\\Engine\\Session\\Tests\\": "tests/Session/",
+            "Laika\\Engine\\Shield\\Tests\\": "tests/Shield/"
+        }
+    },
+    "bin": [
+        "bin/laika",
+        "bin/worker"
+    ],
+    "extra": {
+        "laika": {
+            "resources": {
+                "functions": {
+                    "path": "helpers/functions"
+                },
+                "hooks": {
+                    "path": "helpers/hooks"
+                },
+                "relays": [
+                    {
+                        "path": "src/Cache/Relay",
+                        "namespace": "Laika\\Engine\\Cache\\Relay",
+                        "contract": "Laika\\Engine\\Relay\\RelayProvider"
+                    },
+                    {
+                        "path": "src/Shield/Relay",
+                        "namespace": "Laika\\Engine\\Shield\\Relay",
+                        "contract": "Laika\\Engine\\Relay\\RelayProvider"
+                    }
+                ],
+                "pipelines": {
+                    "path": "src/Shield/Pipeline",
+                    "namespace": "Laika\\Engine\\Shield\\Pipeline",
+                    "contract": "Laika\\Engine\\Route\\Contracts\\PipelineInterface"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "test": [
+            "@php -d auto_prepend_file=tests/Cache/bootstrap.php vendor/bin/phpunit --testsuite Cache",
+            "@php -d auto_prepend_file=tests/Core/bootstrap.php vendor/bin/phpunit --testsuite Core",
+            "@php -d auto_prepend_file=tests/bootstrap.php vendor/bin/phpunit --testsuite Model",
+            "@php -d auto_prepend_file=tests/Route/bootstrap.php vendor/bin/phpunit --testsuite Route",
+            "@php -d auto_prepend_file=tests/bootstrap.php vendor/bin/phpunit --testsuite Session",
+            "@php -d auto_prepend_file=tests/Shield/bootstrap.php vendor/bin/phpunit --testsuite Shield"
+        ],
+        "lint": "php-cs-fixer fix --dry-run --diff",
+        "compat": "phpcs --standard=phpcs.xml --report=full"
+    },
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
+}

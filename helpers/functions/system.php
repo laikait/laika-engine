@@ -1,0 +1,694 @@
+<?php
+
+/**
+ * Laika Framework
+ * Author: Showket Ahmed
+ * Email: riyadhtayf@gmail.com
+ * License: MIT
+ * This file is part of the Laika Framework.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+use Laika\Engine\Service\Url;
+use Laika\Engine\Service\Hook;
+use Laika\Engine\Service\CSRF;
+use Laika\Engine\Service\Meta;
+use Laika\Engine\Route\Handler;
+use Laika\Engine\Service\Asset;
+// The concrete class, not the relay: version() and appendVersion() are pure
+// statics, so they need no container and no instance resolution.
+use Laika\Engine\Core\Template\Asset as AssetFile;
+use Laika\Engine\Service\AppKey;
+use Laika\Engine\Service\Option;
+use Laika\Engine\Service\Config;
+use Laika\Engine\Service\Cache;
+use Laika\Engine\Service\Request;
+use Laika\Engine\Service\Context;
+use Laika\Engine\Session\Session;
+use Laika\Engine\Model\Connection;
+
+/**
+ * Dump Data & Die
+ * @param mixed $data Data to Dump
+ * @param bool $die Default is false
+ * @return void
+*/
+function dd(mixed $data, bool $die = false): void
+{
+    echo '<pre style="background-color:#000;color:#fff;">';
+    var_dump($data);
+    echo '</pre>';
+    if ($die) {
+        die();
+    }
+}
+
+/**
+ * Show Data & Die
+ * @param mixed $data Data to Show
+ * @param bool $die Default is false
+ * @return void
+*/
+function show(mixed $data, bool $die = false): void
+{
+    echo '<pre style="background-color:#000;color:#fff;">';
+    print_r($data);
+    echo '</pre>';
+    if ($die) {
+        die();
+    }
+}
+
+/**
+ * Purify Array Values
+ * @param array $data Array Data to Purify
+ * @return array
+ */
+function purify(array $data): array
+{
+    if (empty($data)) {
+        return $data;
+    }
+    return array_map(function ($val) {
+        return match (true) {
+            is_array($val) => purify($val),
+            is_string($val) => trim((string) $val),
+            default => $val
+        };
+    }, $data);
+}
+
+/**
+ * Convert Any Value To String.
+ * @param mixed $value
+ * @return string
+ */
+function convert_to_string(mixed $value): string
+{
+    return match (true) {
+        is_string($value) => $value,
+        is_bool($value) => $value ? 'true' : 'false',
+        is_null($value) => '',
+        is_scalar($value) => (string) $value,
+        default => json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '',
+    };
+}
+
+/**
+ * App Name
+ * @return string
+ */
+function app_name(): string
+{
+    return config('app', 'name', 'Laika Framework');
+}
+
+
+/**
+ * Add Hook
+ * @param string $filter Filter Name.
+ * @param callable $callback Required Argument.
+ * @param int $priority Optional Argument. Default is 10
+ * @return void
+*/
+function add_hook(string $filter, callable $callback, int $priority = 10): void
+{
+    Hook::add($filter, $callback, $priority);
+}
+
+/**
+ * Do Hook
+ * @param string $filter Filter Name.
+ * @param mixed ...$args Optional Arguments.
+ * @return void
+*/
+function do_hook(string $filter, mixed ...$args): void
+{
+    Hook::do($filter, ...$args);
+}
+
+/**
+ * Apply Hook
+ * @param string $filter Filter Name.
+ * @param mixed $value Optional Argument. Default is Null.
+ * @param mixed ...$args Optional Arguments.
+ * @return mixed
+*/
+function apply_hook(string $filter, mixed $value = null, mixed ...$args): mixed
+{
+    return Hook::apply($filter, $value, ...$args);
+}
+
+/**
+ * Get Named Route
+ * @param string $name Named Route Name. Example: 'client' or 'client?status=active'
+ * @param array $params Named Route Parameters. Example: ['id'=>1234]
+ * @return string
+ */
+function named(string $name, array $params = []): string
+{
+    // Get Slug
+    $named = parse_url($name, PHP_URL_PATH);
+    // Get Query String
+    $qstring = parse_url($name, PHP_URL_QUERY);
+    // Make Named Path
+    $path = trim(Handler::namedUrl($named, $params), '/');
+    $path = $qstring ? "{$path}?{$qstring}" : $path;
+    // Return Named Path/URL
+    return Url::base() . $path;
+}
+
+/**
+ * Config Obejct
+ * @param string $name Config Name. Rrequired Argument. Example: app, database etc.
+ * @param ?string $key Config Key. Optional Argument. Example: name, version etc.
+ * @param mixed $default Default Value if no value found. Optional Argument.
+ * @return mixed
+ */
+function config(string $name, ?string $key = null, mixed $default = null): mixed
+{
+    return Config::get($name, $key, $default);
+}
+
+/**
+ * Make Slug From Name
+ * @return string
+ */
+function slugify(string $name): string
+{
+    $parts = explode('.', $name);
+    $name = $parts[0];
+    $name = preg_replace('~[^\pL\d]+~u', '-', $name);
+    $name = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $name) ?: $name;
+    $name = preg_replace('~[^-\w]+~', '', $name);
+    $name = trim($name, '-');
+    $name = preg_replace('~-+~', '-', $name);
+    return strtolower($name) ?: 'file-' . uniqid() . '-' . time();
+}
+
+/**
+ * Get All Timezones
+ * @return array
+ */
+function time_zones(): array
+{
+    return \DateTimeZone::listIdentifiers(DateTimeZone::ALL);
+}
+
+/**
+ * Get Repo Directory
+ * @param string $name Repository name
+ * @return string
+ */
+function repo_dir(string $name): string
+{
+    return realpath(APP_PATH . '/vendor/' . trim($name, '/'));
+}
+
+/**
+ * Set File/Directory Permission
+ * @param string $path File/Directory Path
+ * @param int $mode Permission Mode. Default is 0755
+ * @return bool
+ */
+function setPermission(string $path, int $mode = 0o755): bool
+{
+    if (!file_exists($path)) {
+        return false;
+    }
+
+    if (stripos(PHP_OS, 'WIN') === 0) {
+        $readonly = !($mode & 0o200);
+        exec('attrib ' . ($readonly ? '+R' : '-R') . ' ' . escapeshellarg($path));
+        return true;
+    }
+
+    return chmod($path, $mode);
+}
+
+/**
+ * Set File/Directory Permission Recursively
+ * @param string $path File/Directory Path
+ * @param int $dirMode Directory Permission Mode. Default is 0755
+ * @param int $fileMode File Permission Mode. Default is 0644
+ * @return bool
+ */
+function setPermissionRecursive(string $path, int $dirMode = 0o755, int $fileMode = 0o644): bool
+{
+    if (!file_exists($path)) {
+        return false;
+    }
+
+    if (is_dir($path)) {
+        setPermission($path, $dirMode);
+        foreach (scandir($path) as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+            setPermissionRecursive($path . DIRECTORY_SEPARATOR . $item, $dirMode, $fileMode);
+        }
+    } else {
+        setPermission($path, $fileMode);
+    }
+
+    return true;
+}
+
+#######################################################################################
+/*================================== CACHE HANDLE ===================================*/
+#######################################################################################
+/**
+ * Get Cached Value
+ * @param string $key Cache Key
+ * @param mixed $default Returned only when the key is absent or expired. A stored null is returned as null.
+ * @return mixed
+ */
+function cache(string $key, mixed $default = null): mixed
+{
+    return Cache::get($key, $default);
+}
+
+/**
+ * Store Value in Cache
+ * @param string $key Cache Key
+ * @param mixed $value Value to Store
+ * @param ?int $ttl Seconds. null uses lf-config/cache.php 'ttl', 0 never expires.
+ * @return bool
+ */
+function cache_set(string $key, mixed $value, ?int $ttl = null): bool
+{
+    return Cache::set($key, $value, $ttl);
+}
+
+/**
+ * Get Cached Value or Compute and Store it
+ * @param string $key Cache Key
+ * @param ?int $ttl Seconds. null uses lf-config/cache.php 'ttl'.
+ * @param callable $callback Runs only on a miss, even when it returns null
+ * @return mixed
+ */
+function cache_remember(string $key, ?int $ttl, callable $callback): mixed
+{
+    return Cache::remember($key, $ttl, $callback);
+}
+
+/**
+ * Check Cache Key Exists
+ * @param string $key Cache Key
+ * @return bool True when present, whatever the value
+ */
+function cache_has(string $key): bool
+{
+    return Cache::has($key);
+}
+
+/**
+ * Remove Cached Value
+ * @param string $key Cache Key
+ * @return bool
+ */
+function cache_pop(string $key): bool
+{
+    return Cache::pop($key);
+}
+
+#######################################################################################
+/*================================== OPTION HANDLE ==================================*/
+#######################################################################################
+/**
+ * Get Option Value
+ * @param string $key
+ * @param null|string|int $default
+ * @return ?string
+ */
+function option(string $key, string|int|null $default = null): ?string
+{
+    // No memo of its own: OptionModel already caches per process, and it is the
+    // cache insert() and update() keep current. A second one here returned the
+    // old value after option_update(), cached the default of whichever caller
+    // came first, and re-queried a missing key on every call.
+    return Option::single($key, $default === null ? null : (string) $default);
+}
+
+/**
+ * Get Option Value as Bool
+ * @param string $key
+ * @return bool
+ */
+function option_bool(string $key): bool
+{
+    return (bool) preg_match('/^true$/i', option($key, 'false'));
+}
+
+/**
+ * Get Option Value as Int
+ * @param string $key
+ * @param int $default
+ * @return int
+ */
+function option_int(string $key, int $default = 0): int
+{
+    $v = option($key, (string) $default);
+    if (is_numeric($v)) {
+        return (int) $v;
+    }
+    return $default;
+}
+
+/**
+ * Get Option Value as Array
+ * @param string $key
+ * @param array $default
+ * @return array
+ */
+function option_array(string $key, array $default = []): array
+{
+    $str = option($key, "");
+    try {
+        $arr = json_decode($str, true, 512, JSON_THROW_ON_ERROR);
+        if (is_array($arr)) {
+            return $arr;
+        }
+    } catch (\Throwable $th) {
+    }
+    return $default;
+}
+
+/**
+ * Insert Option
+ * @param string $ksy
+ * @param mixed $value
+ * @return bool
+ */
+function option_insert(string $key, mixed $value): bool
+{
+    return Option::insert($key, $value);
+}
+
+/**
+ * Update Option
+ * @param string $ksy
+ * @param mixed $value
+ * @return bool
+ */
+function option_update(string $key, mixed $value): bool
+{
+    return Option::update($key, $value);
+}
+
+#######################################################################################
+/*================================ REQUEST FUNCTIONS ================================*/
+#######################################################################################
+/**
+ * Check Method Request is Post/Get/Put/Patch/Delete/Ajax
+ * @param string $method
+ */
+function request_is(string $method): bool
+{
+    return match (strtolower($method)) {
+        'post'  =>  Request::isPost(),
+        'get'   =>  Request::isGet(),
+        'put'   =>  Request::isPut(),
+        'patch' =>  Request::isPatch(),
+        'delete' =>  Request::isDelete(),
+        'ajax'  =>  Request::isAjax(),
+        default =>  false
+    };
+}
+
+/**
+ * Request Inputs
+ * @return array
+ */
+function request_inputs()
+{
+    return Request::inputs();
+}
+
+/**
+ * Request Input
+ * @return array
+ */
+function request_input(string $key, mixed $default = ''): mixed
+{
+    return Request::input($key, $default);
+}
+
+/**
+ * Get Request Header
+ * @param string $key
+ * @return string
+ */
+function request_header(string $key): ?string
+{
+    return Request::header($key);
+}
+
+######################################################################################
+/*================================= ALERT FUNCTIONS ================================*/
+######################################################################################
+/**
+ * Set Alert Message
+ * @param string $message
+ * @param bool $status
+ * @return void
+ */
+function alert_set(string $message, bool $status): void
+{
+    Session::set('alert', ['message' => $message, 'status' => $status]);
+}
+
+/**
+ * Get Alert Message
+ * @return array
+ */
+function alert_get(): array
+{
+    $alert = Session::get('alert');
+    Session::pop('alert');
+    return $alert ?: [];
+}
+
+######################################################################################
+/*================================= PAGE FUNCTIONS =================================*/
+######################################################################################
+/**
+ * Page Title
+ * @param string $title
+ * @return string
+ */
+function page_title(string $title): string
+{
+    return "{$title} | " . config('app', 'name', 'Laika Framework');
+}
+
+/**
+ * Page Number
+ * @return int
+ */
+function page_number(): int
+{
+    return max(1, (int) Request::input('page', 1));
+}
+
+######################################################################################
+/*=============================== TEMPLATE FUNCTIONS ===============================*/
+######################################################################################
+/**
+ * Load Template Asset
+ *
+ * The returned URL carries "?v={hex mtime}" when the file is on disk, which
+ * is what lets it be served immutable instead of revalidated on every load.
+ * A path with a host is an external URL and is returned untouched.
+ *
+ * @param string $path
+ * @return string
+ */
+function asset(string $path): string
+{
+    if (parse_url($path, PHP_URL_HOST)) {
+        return $path;
+    }
+
+    // Resolved from the path as written, before the trim below rewrites it
+    $version = AssetFile::version($path);
+    $path = trim($path, '/.');
+
+    return AssetFile::appendVersion(Url::base() . $path, $version);
+}
+
+/**
+ * Add Context Data
+ * @param string $key
+ * @param mixed $value
+ * @return void
+ */
+function context_add(string $key, mixed $value): void
+{
+    Context::set($key, $value);
+}
+
+/**
+ * Get Context Data
+ * @param ?string $key
+ * @param mixed $default
+ * @return mixed
+ */
+function context_get(?string $key = null, mixed $default = null): mixed
+{
+    return Context::get($key, $default);
+}
+
+/**
+ * Enqueue Meta
+ * @param string $name
+ * @param string $content
+ * @param string $type Default is 'name'
+ * @return void
+ */
+function enqueue_meta(string $name, string $content, string $type = 'name'): void
+{
+    Meta::add($name, $content, $type);
+}
+
+/**
+ * Enqueue Style
+ * @param string $handle
+ * @param string $src
+ * @param string $version Empty derives it from the file's mtime
+ * @param string $media
+ * @return void
+ */
+function enqueue_style(string $handle, string $src, string $version = '', string $media = 'all'): void
+{
+    Asset::addStyle($handle, $src, $version, $media);
+}
+
+/**
+ * Print Styles
+ * @return void
+ */
+function print_styles(): void
+{
+    Asset::printStyles();
+}
+
+/**
+ * Enqueue Script
+ * @param string $handle
+ * @param string $src
+ * @param string $version Empty derives it from the file's mtime
+ * @param bool $defer
+ * @return void
+ */
+function enqueue_script(string $handle, string $src, string $version = '', bool $defer = false): void
+{
+    Asset::addScript($handle, $src, $version, $defer);
+}
+
+/**
+ * Print Metas
+ * @return void
+ */
+function print_metas(): void
+{
+    Meta::print();
+}
+
+/**
+ * Print Scripts
+ * @return void
+ */
+function print_scripts(): void
+{
+    Asset::printScripts();
+}
+
+/**
+ * Print Framework Head
+ * @return void
+ */
+function lf_header(): void
+{
+    // Print Metas
+    print_metas();
+
+    // Print Styles
+    print_styles();
+
+    // Default Scripts
+    Asset::headerScripts();
+}
+
+/**
+ * Print Framework Footer
+ * @return void
+ */
+function lf_footer(): void
+{
+    // Print Styles
+    print_scripts();
+}
+
+/**
+ * CSRF Token HTL Field
+ * @return void
+ */
+function csrf_field(): void
+{
+    echo CSRF::field();
+};
+
+/**
+ * Local Language Value
+ * @return string
+ */
+function local(string $property, ...$args): string
+{
+    // Return if Class Doesn't Exists
+    if (!class_exists('LANG')) {
+        throw new RuntimeException("'LANG' Class Doesn't Exists!");
+    }
+    // Return if Class Exists
+    if (!isset(LANG::$$property)) {
+        throw new InvalidArgumentException("Invalid Language Property: [$property]");
+    }
+    return sprintf(LANG::$$property, ...$args);
+}
+
+/**
+ * App Host
+ * @return string
+ */
+function app_host(): string
+{
+    return Url::base();
+}
+
+/**
+ * Match Current Url With Named
+ * @param string $named
+ * @return bool
+ */
+function match_url(string $named): bool
+{
+    return str_starts_with(Url::current(), named($named));
+}
+
+/**
+ * Make API Data
+ * @param bool $status
+ * @param int|string $message
+ * @param array $data
+ * @return array
+ */
+function response(bool $status, int|string $message, array $data = []): array
+{
+    return [
+        'status' => $status,
+        'message' => $message,
+        'data' => $data,
+    ];
+}

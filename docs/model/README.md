@@ -1,0 +1,1352 @@
+# Laika Single/Multi Connecton Database Model
+A lightweight, secure PDO database model and schema builder for PHP 8.1+.  
+Full support — queries **and** schema builder — for MySQL, MariaDB, PostgreSQL,
+SQLite and SQL Server. Oracle and Firebird are supported for connections,
+queries and backup, but ship no built-in schema grammar — see
+[Custom Grammar](#custom-grammar) to register your own.
+
+**Author:** Showket Ahmed  
+**License:** MIT
+
+# Key Features
+* <b>Object-Oriented Structure</b>: Built with PHP OOP principles, ensuring code reusability, scalability, and maintainability.</br>
+* <b>Custom Database and Model Classes</b>: Uses a custom Database class for managing database connections, queries, and transactions, and a Model class to represent data entities in the application.</br>
+* <b>Secure Transactions</b>: Implements ACID-compliant transactions for consistent and reliable data handling.</br>
+* <b>Dynamic Query Builder</b>: Supports dynamic query generation with a range of options for filters, sorting, and pagination, making it easy to create complex queries without directly writing SQL.</br>
+* <b>Error Handling</b>: Comprehensive error handling and logging for tracking and debugging issues efficiently.</br>
+* <b>Scalable Architecture</b>: Designed with scalability in mind, suitable for all type of PHP applications.</br>
+* <b>Easy Integration</b>: Integrates seamlessly with other PHP-based applications and frameworks, allowing flexible deployment in diverse environments.</br>
+
+## Technologies Used
+* <b>PHP (Object-Oriented)</b>: Core programming language, providing OOP features for structure and maintainability.</br>
+* <b>MySQL</b>: Relational database management system used for data storage, with optimized queries for faster performance.</br>
+* <b>PDO (PHP Data Objects)</b>: Utilized for secure database access with prepared statements to prevent SQL injection.</br>
+
+---
+
+## Table of Contents
+
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Connection Setup](#connection-setup)
+- [Model](#model)
+  - [Defining a Model](#defining-a-model)
+  - [Select](#select)
+  - [Where Clauses](#where-clauses)
+  - [Ordering, Limiting, Pagination](#ordering-limiting-pagination)
+  - [Joins](#joins)
+  - [Aggregates](#aggregates)
+  - [Insert](#insert)
+  - [Update](#update)
+  - [Delete](#delete)
+  - [Soft Delete](#soft-delete)
+  - [Increment & Decrement](#increment--decrement)
+  - [Chunking](#chunking)
+  - [Transactions](#transactions)
+  - [Raw Queries](#raw-queries)
+  - [Debugging](#debugging)
+  - [UID Generation](#uid-generation)
+  - [Type Casting](#type-casting)
+- [Schema Builder](#schema-builder)
+  - [Creating Tables](#creating-tables)
+  - [Column Types](#column-types)
+  - [Column Modifiers](#column-modifiers)
+  - [Indexes & Constraints](#indexes--constraints)
+  - [Foreign Keys](#foreign-keys)
+  - [Modifying Tables](#modifying-tables)
+  - [Dropping Tables](#dropping-tables)
+  - [Inspecting Tables](#inspecting-tables)
+  - [Raw Statements](#raw-statements)
+  - [Multiple Connections](#multiple-connections)
+  - [Custom Grammar](#custom-grammar)
+- [SQL Converter](#sql-converter)
+  - [Converting a dump](#converting-a-dump)
+  - [Migrating between live databases](#migrating-between-live-databases)
+  - [Warnings and the report](#warnings-and-the-report)
+  - [What converts](#what-converts)
+  - [What does not convert](#what-does-not-convert)
+- [Log](#log)
+- [Driver Reference](#driver-reference)
+- [Security](#security)
+
+---
+
+## Requirements
+
+- PHP 8.1 or higher
+- `ext-pdo` extension
+- One of: `pdo_mysql`, `pdo_pgsql`, `pdo_sqlite`, `pdo_sqlsrv`, `pdo_oci`, `pdo_firebird`
+
+---
+
+## Installation
+
+```bash
+composer require laikait/laika-model
+```
+
+---
+
+## Connection Setup
+
+Register connections before using the Model or Schema. All connections are created lazily — no PDO object is created until it is first accessed.
+
+```php
+use Laika\Engine\Model\Connection;
+
+// MySQL / MariaDB
+Connection::add([
+    'driver'   => 'mysql',
+    'host'     => '127.0.0.1',
+    'port'     => 3306,
+    'database' => 'myapp',
+    'username' => 'root',
+    'password' => 'secret',
+    'charset'  => 'utf8mb4',
+    'timezone' => '+00:00', // optional — omit to use the server's timezone
+]);
+```
+
+> **Upgrading from 3.2.x — MySQL session timezone.** Earlier versions forced
+> every MySQL connection to `+00:00` with no way to change it. The session
+> timezone now follows the server unless you set the `timezone` key. If your
+> application relied on the old behaviour, add `'timezone' => '+00:00'` to the
+> config.
+
+```php
+use Laika\Engine\Model\Connection;
+
+// MySQL via Unix socket (localhost only)
+Connection::add([
+    'driver'      => 'mysql',
+    'host'        => 'localhost',
+    'unix_socket' => '/var/run/mysqld/mysqld.sock',
+    'database'    => 'myapp',
+    'username'    => 'root',
+    'password'    => 'secret',
+]);
+
+// PostgreSQL
+Connection::add([
+    'driver'   => 'pgsql',
+    'host'     => '127.0.0.1',
+    'port'     => 5432,
+    'database' => 'myapp',
+    'username' => 'postgres',
+    'password' => 'secret',
+], 'pgsql');
+
+// SQLite — file
+Connection::add([
+    'driver'   => 'sqlite',
+    'database' => '/var/db/myapp.sqlite',
+], 'sqlite');
+
+// SQLite — in-memory (useful for testing)
+Connection::add([
+    'driver'   => 'sqlite',
+    'database' => ':memory:',
+], 'test');
+
+// SQL Server
+Connection::add([
+    'driver'   => 'sqlsrv',
+    'host'     => '127.0.0.1',
+    'port'     => 1433,
+    'database' => 'myapp',
+    'username' => 'sa',
+    'password' => 'secret',
+], 'sqlsrv');
+
+// Oracle
+Connection::add([
+    'driver'   => 'oci',
+    'host'     => '127.0.0.1',
+    'port'     => 1521,
+    'database' => 'XE',
+    'username' => 'system',
+    'password' => 'secret',
+], 'oracle');
+
+// Firebird
+Connection::add([
+    'driver'   => 'firebird',
+    'host'     => '127.0.0.1',
+    'port'     => 3050,
+    'database' => '/var/db/myapp.fdb',
+    'username' => 'sysdba',
+    'password' => 'masterkey',
+], 'firebird');
+```
+
+### Connection Management
+
+```php
+Connection::has('read');          // check if connection is registered
+Connection::names();              // ['default', 'read', ...]
+Connection::config('read');       // the raw config array registered for a name
+Connection::close('read');        // destroy a live connection
+Connection::closeAll();           // destroy all live connections
+Connection::reconnect('read');    // close and immediately re-establish
+Connection::purge();              // remove all configs + connections (testing)
+Connection::driver('read');       // canonical driver name: 'mysql', 'pgsql', ...
+Connection::generation();         // registry version, bumped on every mutation
+```
+
+Every method that takes a connection name may be called without one, in which
+case the **default connection** is used:
+
+```php
+Connection::add([...], 'read');
+Connection::setDefault('read');   // 'read' is now used whenever a name is omitted
+Connection::getDefault();         // 'read'
+
+new User();                       // uses 'read'
+Schema::on()->hasTable('users');  // uses 'read'
+```
+
+`setDefault()` throws if no config is registered under that name. `purge()`
+resets the default back to `'default'`.
+
+> **Driver names.** Config accepts aliases — `mariadb`, `postgres`, `sqlite3`,
+> `oracle`, `ibase` — but `Connection::driver()` always reports the *canonical*
+> name (`mysql`, `pgsql`, `sqlite`, `oci`, `firebird`). Anything that branches on
+> a driver string, including a grammar registered via `Schema::registerGrammar()`,
+> should use the canonical name.
+
+`Connection::driver()` is resolvable before the connection is established — it is
+derived from the registered config, so it does not force a connect.
+
+### Stale connections
+
+Re-registering a name replaces its live PDO handle:
+
+```php
+$user = new User();
+Connection::add($newConfig);   // same name, different database
+$user->table('users')->get();  // automatically runs against the new connection
+```
+
+Models detect this through `Connection::generation()` and re-resolve their handle
+on the next query, so a `Model` built before the change never runs against a dead
+socket.
+
+---
+
+## Model
+
+### Defining a Model
+
+Extend the base `Model` class and set your table name. All other properties are optional.
+
+```php
+use Laika\Engine\Model\Model;
+
+class User extends Model
+{
+    /** @var string $table Table Name */
+    protected string $table          = 'users';
+
+    /** @var string $id Primary Column Name. [Optional] */
+    protected string $id             = 'id';
+
+    /** @var string $id Uid Column Name. [Optional] */
+    protected string $uid            = 'uid';
+
+    /** @var string $id Deleted At Column Column Name. [Optional] */
+    protected string $deletedAtColumn = 'deleted_at';
+
+    /**
+     * Table Columns Name & Type Declaration
+     * @var array{string:string} Example: ['column_1' => 'int', 'column_2' => 'string']
+    */
+    protected array $casts = [
+        'id'      => 'int',
+        'uid'     => 'string',
+        'active'  => 'bool',
+        'credits' => 'int',
+        'meta'    => 'json',
+    ];
+}
+```
+
+Instantiate with an optional connection override:
+
+```php
+$users = new User();           // uses 'default' connection
+$read  = new User('read');     // uses 'read' connection
+```
+
+---
+
+### Select
+
+```php
+// All columns (default)
+$users->get();
+
+// Specific columns
+$users->select('id, name, email')->get();
+
+// All columns
+$users->select('*')->get();
+
+// Distinct rows
+$users->select('role')->distinct()->get();
+```
+
+---
+
+### Where Clauses
+
+All column names are validated and quoted. All values are bound via prepared statements.
+
+```php
+// Equality (default operator)
+$users->where(['active' => 1])->get();
+
+// Custom operator
+$users->where(['credits' => 100], '>')->get();
+
+// Supported operators: =  !=  <>  <  >  <=  >=  LIKE  NOT LIKE
+$users->where(['name' => '%alice%'], 'LIKE')->get();
+
+// Not equal shorthand
+$users->whereNot(['role' => 'banned'])->get();
+
+// IN list
+$users->whereIn('id', [1, 2, 3])->get();
+
+// NOT IN list
+$users->whereNotIn('role', ['banned', 'spam'])->get();
+
+// IS NULL
+$users->isNull('deleted_at')->get();
+
+// IS NOT NULL
+$users->notNull('email')->get();
+
+// BETWEEN
+$users->between('credits', 10, 100)->get();
+
+// AND / OR combining
+$users
+    ->where(['active' => 1])
+    ->where(['role' => 'admin'], '=', 'OR')
+    ->get();
+
+// Grouped conditions — (a AND b) OR (c AND d)
+$users
+    ->whereGroup(function (Model $m) {
+        $m->where(['role' => 'admin'])->where(['active' => 1]);
+    })
+    ->whereGroup(function (Model $m) {
+        $m->where(['role' => 'moderator'])->where(['active' => 1]);
+    }, 'OR')
+    ->get();
+```
+
+---
+
+### Ordering, Limiting, Pagination
+
+```php
+// Order by single column
+$users->order('created_at', 'DESC')->get();
+
+// Order by multiple columns
+$users
+    ->order('role', 'ASC')
+    ->order('created_at', 'DESC')
+    ->get();
+
+// Limit
+$users->limit(10)->get();
+
+// Pagination — page() takes a PAGE NUMBER, not a row offset
+// Page 1 = rows 1–10, Page 2 = rows 11–20, etc.
+$users->limit(10)->page(1)->get(); // page 1
+$users->limit(10)->page(2)->get(); // page 2
+$users->limit(10)->page(3)->get(); // page 3
+```
+
+---
+
+### Joins
+
+```php
+// LEFT JOIN (default)
+$users
+    ->join('posts', 'users.id', '=', 'posts.user_id')
+    ->select('users.name, posts.title')
+    ->get();
+
+// INNER JOIN
+$users
+    ->join('orders', 'users.id', '=', 'orders.user_id', 'INNER')
+    ->get();
+
+// RIGHT JOIN
+$users
+    ->join('profiles', 'users.id', '=', 'profiles.user_id', 'RIGHT')
+    ->get();
+
+// Multiple joins
+$users
+    ->join('posts', 'users.id', '=', 'posts.user_id')
+    ->join('comments', 'posts.id', '=', 'comments.post_id', 'INNER')
+    ->select('users.name, posts.title, comments.body')
+    ->get();
+```
+
+---
+
+### Aggregates
+
+```php
+// Count all rows
+$total = $users->count();
+
+// Count with condition
+$active = $users->where(['active' => 1])->count();
+
+// Check existence
+$exists = $users->where(['email' => 'alice@example.com'])->exists();
+
+// First matching row — requires WHERE clause. null when nothing matched.
+$user = $users->where(['id' => 1])->first();
+
+// First or throw ModelException
+$user = $users->where(['id' => 1])->firstOrFail();
+
+// Stream a large result set instead of materialising it. Prefer this over
+// get() when the table will not fit in memory.
+foreach ($users->where(['active' => 1])->cursor() as $user) {
+    // one row at a time
+}
+
+// Batches. Return false from the callback to stop early.
+$users->chunk(500, function (array $rows) {
+    // ...
+});
+
+// Single column from all matching rows
+$emails = $users->where(['active' => 1])->pluck('email');
+// ['alice@example.com', 'bob@example.com', ...]
+
+// Group By with Having
+$users->table('orders')
+    ->select('user_id')
+    ->groupBy('user_id')
+    ->having('total', '>', 1000)
+    ->get();
+```
+
+---
+
+### Insert
+
+```php
+// Single row — returns last inserted ID
+$id = $users->insert([
+    'name'   => 'Alice',
+    'email'  => 'alice@example.com',
+    'active' => 1,
+]);
+
+// Multiple rows — returns last inserted ID
+// Automatically chunked into batches of 1000
+$users->insert([
+    ['name' => 'Bob',   'email' => 'bob@example.com'],
+    ['name' => 'Carol', 'email' => 'carol@example.com'],
+    ['name' => 'Dave',  'email' => 'dave@example.com'],
+]);
+```
+
+All rows in a batch must have identical column keys. Passing rows with different keys throws `InvalidArgumentException`.
+
+---
+
+### Update
+
+Update requires a WHERE clause. Calling `update()` without one throws `InvalidArgumentException`.
+
+```php
+// Update single row
+$affected = $users
+    ->where(['id' => 1])
+    ->update(['name' => 'Alice Smith', 'active' => 1]);
+
+// Update multiple rows
+$affected = $users
+    ->where(['role' => 'guest'])
+    ->update(['active' => 0]);
+
+// Update with JOIN
+$affected = $users
+    ->join('profiles', 'users.id', '=', 'profiles.user_id')
+    ->where(['users.active' => 0])
+    ->update(['users.deleted_at' => date('Y-m-d H:i:s')]);
+```
+
+---
+
+### Delete
+
+Delete requires a WHERE clause. Calling `delete()` without one throws `InvalidArgumentException`.
+
+```php
+// Hard delete
+$affected = $users->where(['id' => 1])->delete();
+
+// Delete multiple
+$affected = $users->whereIn('id', [4, 5, 6])->delete();
+```
+
+---
+
+### Soft Delete
+
+Mark rows as deleted by setting a `deleted_at` timestamp instead of removing them.
+
+```php
+// Soft delete — sets deleted_at to current timestamp
+$users->where(['id' => 1])->soft()->delete();
+
+// Restore — sets deleted_at back to null
+$users->where(['id' => 1])->restore();
+
+// Trashed rows are hidden from reads automatically when the model declares
+// `protected bool $softDelete = true;`.
+
+// Include soft-deleted rows alongside the live ones
+$users->withTrash()->get();
+
+// Only the soft-deleted rows
+$users->onlyTrashed()->get();
+
+// Explicitly exclude them (already the default on a soft-delete model)
+$users->withoutTrash()->get();
+```
+
+Override the soft delete column in your model:
+
+```php
+protected string $deletedAtColumn = 'removed_at';
+```
+
+---
+
+### Increment & Decrement
+
+```php
+// Increment login_count by 1 for a specific user
+$users->where(['id' => 1])->increment('login_count');
+
+// Increment by a custom amount
+$users->where(['id' => 1])->increment('credits', 50);
+
+// Decrement
+$users->where(['id' => 1])->decrement('credits', 10);
+
+// Using table.column notation
+$users->where(['id' => 1])->increment('users.views', 1);
+```
+
+Both methods require a WHERE clause.
+
+---
+
+### Chunking
+
+Process large result sets without loading all rows into memory at once.
+
+```php
+$users->where(['active' => 1])->chunk(100, function (array $rows) {
+    foreach ($rows as $row) {
+        // process each row
+    }
+});
+```
+
+Each chunk is fetched in a separate query. The loop stops automatically when no more rows are returned.
+
+---
+
+### Transactions
+
+```php
+$users->transaction(function (Model $model) {
+    $id = $model->insert(['name' => 'Alice', 'email' => 'a@b.com']);
+    $model->table('orders')->insert(['user_id' => $id, 'total' => 99.99]);
+});
+```
+
+Automatically rolls back and rethrows as `RuntimeException` on any exception.
+
+**Nested transactions** on the same connection are supported via savepoints. Only
+the outermost call opens a real transaction; an inner failure rolls back to its
+own savepoint and leaves the outer transaction intact:
+
+```php
+$users->transaction(function (Model $model) use ($users) {
+    $model->insert(['name' => 'Alice']);          // kept
+
+    try {
+        $users->transaction(function (Model $inner) {
+            $inner->table('orders')->insert([...]); // rolled back
+            throw new RuntimeException('nope');
+        });
+    } catch (RuntimeException $e) {
+        // The outer transaction is still open and Alice is still there.
+    }
+});
+
+Connection::transactionLevel();   // current depth, 0 when none is active
+```
+
+The same depth is shared by every `Model` on a connection, so two models on
+`'default'` participate in one transaction rather than fighting over it. Each
+connection's transaction is independent — there is no cross-connection
+(two-phase-commit) support.
+
+---
+
+### Raw Queries
+
+```php
+// Prepared statement — returns PDOStatement
+$stmt = $users->execute(
+    'SELECT * FROM users WHERE email LIKE ? AND active = ?',
+    ['%@example.com', 1]
+);
+$rows = $stmt->fetchAll();
+
+// Aggregate
+$count = $users->execute('SELECT COUNT(*) FROM users')->fetchColumn();
+
+// JOIN
+$rows = $users->execute(
+    'SELECT u.name, p.title FROM users u JOIN posts p ON p.user_id = u.id WHERE u.id = ?',
+    [1]
+)->fetchAll();
+```
+
+---
+
+### Debugging
+
+Preview the SQL that would be executed with bindings filled in. Does not execute anything.
+
+```php
+$sql = $users
+    ->where(['active' => 1])
+    ->order('created_at', 'DESC')
+    ->limit(10)
+    ->debug();
+
+// Returns: SELECT * FROM `users` WHERE `active` = 1 ORDER BY `created_at` DESC LIMIT 10
+echo $sql;
+```
+
+---
+
+### UID Generation
+
+Generate a unique, collision-safe string ID and verify it does not already exist in the database.
+
+```php
+$uid = $users->uid();
+// Returns: "UID-A1B2C3-D4E5F6-G7H8I9-J0K1L2-483920"
+
+// Custom max attempts (default 10)
+$uid = $users->uid(5);
+```
+
+Override the UID column name in your model:
+
+```php
+protected string $uid = 'uid';
+```
+
+---
+
+### Type Casting
+
+Declare a `$casts` array in your model to automatically convert column values after fetching.
+
+```php
+protected array $casts = [
+    'id'          => 'int',
+    'active'      => 'bool',
+    'score'       => 'float',
+    'preferences' => 'json',
+    'permissions' => 'serialize',
+    'name'        => 'string',
+];
+```
+
+| Cast type | Input from DB | Output |
+|---|---|---|
+| `int` / `integer` | `"42"` | `42` — kept as a string past `PHP_INT_MAX` |
+| `float` / `double` | `"3.14"` | `3.14` |
+| `decimal` | `"19.9900"` | `"19.9900"` — string, so no rounding error |
+| `bool` / `boolean` | `"0"`, `""`, `"f"`, `"off"`, `"no"` | `false` — all others `true` |
+| `json` / `array` | `'{"a":1}'` | `['a' => 1]` |
+| `serialize` | `'a:1:{...}'` | original PHP value (objects are not instantiated) |
+| `string` | `42` | `"42"` |
+
+Casting is applied automatically on `get()`, `first()`, `find()`, `firstOrFail()`,
+`chunk()`, `cursor()` and `pluck()`.
+
+**`NULL` always survives a cast.** A nullable `int` column reads back as `null`,
+not `0`, so "unset" stays distinguishable from "zero".
+
+**An unknown cast name throws** a `ModelException` rather than passing the value
+through untouched, so a typo like `'integar'` surfaces immediately.
+
+Rows are returned as arrays or `stdClass` objects depending on the connection's
+`PDO::ATTR_DEFAULT_FETCH_MODE`; both are supported throughout.
+
+**Note:** Values must be serialized manually before `insert()` / `update()`:
+
+```php
+$users->where(['id' => 1])->update([
+    'preferences' => json_encode(['theme' => 'dark']),
+    'permissions' => serialize(['read', 'write']),
+]);
+```
+
+---
+
+## Schema Builder
+
+### Creating Tables
+
+```php
+use Laika\Engine\Model\Schema\Schema;
+use Laika\Engine\Model\Schema\Blueprint;
+
+// Create — throws if table already exists
+Schema::on()->create('users', function (Blueprint $t) {
+    $t->id();
+    $t->string('name', 100);
+    $t->string('email');
+    $t->timestamps();
+});
+
+// Create if not exists — safe to run on every deploy
+Schema::on()->createIfNotExists('users', function (Blueprint $t) {
+    $t->id();
+    $t->uid();
+    $t->string('name', 100);
+    $t->string('email');
+    $t->boolean('active')->default(true);
+    $t->timestamps();
+});
+
+// With MySQL table options
+Schema::on()->create('logs', function (Blueprint $t) {
+    $t->id();
+    $t->text('message');
+    $t->timestamps();
+}, [
+    'engine'    => 'InnoDB',
+    'charset'   => 'utf8mb4',
+    'collation' => 'utf8mb4_unicode_ci',
+]);
+```
+
+---
+
+### Column Types
+
+```php
+Schema::on()->create('showcase', function (Blueprint $t) {
+
+    // Auto-increment primary keys
+    $t->id();                          // INT UNSIGNED AUTO_INCREMENT PRIMARY KEY
+    $t->bigId();                       // BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY
+    $t->id('custom_id');               // custom PK name
+
+    // UID
+    $t->uid();                         // CHAR(38) — for string UIDs
+    $t->uid('custom_uid');             // custom column name
+
+    // Integers
+    $t->integer('views');
+    $t->bigInteger('large_number');
+    $t->smallInteger('rating');
+    $t->tinyInteger('flag');
+    $t->unsignedInteger('score');
+    $t->unsignedBigInteger('ref_id');
+
+    // Decimals
+    $t->float('latitude');
+    $t->double('longitude');
+    $t->decimal('price', 10, 2);       // DECIMAL(10,2)
+
+    // Boolean
+    $t->boolean('is_active');
+
+    // Strings
+    $t->char('country_code', 3);       // CHAR(3)
+    $t->string('title');               // VARCHAR(255)
+    $t->string('slug', 200);           // VARCHAR(200)
+    $t->text('summary');
+    $t->mediumText('content');
+    $t->longText('body');
+    $t->serialize('payload');          // TEXT — use for serialized PHP data
+
+    // Enum & Set (MySQL native; CHECK constraint on other drivers)
+    $t->enum('status', ['active', 'inactive', 'banned']);
+    $t->set('roles', ['admin', 'editor', 'viewer']);
+
+    // Date & Time
+    $t->date('birth_date');
+    $t->time('start_time');
+    $t->dateTime('published_at');
+    $t->timestamp('last_login');
+
+    // Other
+    $t->json('meta');
+    $t->binary('file_data');
+
+    // Helpers
+    $t->timestamps();                  // created_at + updated_at (both nullable)
+    $t->deleted();                     // deleted_at (nullable, for soft deletes)
+    $t->deleted('removed_at');         // custom column name
+});
+```
+
+---
+
+### Column Modifiers
+
+Chain modifiers after any column definition:
+
+```php
+$t->string('phone')->nullable();
+$t->integer('stock')->default(0);
+$t->string('status')->default('active');
+$t->decimal('price', 10, 2)->unsigned()->default(0.00);
+$t->text('notes')->nullable()->comment('Internal use only');
+$t->integer('count')->unsigned()->autoIncrement();
+```
+
+| Modifier | Description |
+|---|---|
+| `->nullable()` | Allow NULL values |
+| `->default($value)` | Set a default value |
+| `->unsigned()` | Mark column as unsigned (integers) |
+| `->autoIncrement()` | Add auto-increment |
+| `->comment('...')` | Add a column comment (MySQL only) |
+
+---
+
+### Indexes & Constraints
+
+```php
+Schema::on()->create('posts', function (Blueprint $t) {
+    $t->id();
+    $t->unsignedBigInteger('user_id');
+    $t->string('slug', 200);
+    $t->string('status')->default('draft');
+    $t->timestamps();
+
+    // Single column unique
+    $t->unique(['slug']);
+
+    // Composite unique with custom name
+    $t->unique(['user_id', 'slug'], 'uq_user_slug');
+
+    // Index
+    $t->index(['status']);
+
+    // Composite index with custom name
+    $t->index(['user_id', 'status'], 'idx_user_status');
+
+    // Composite primary key (no auto-increment id)
+    $t->primary(['user_id', 'slug']);
+});
+```
+
+---
+
+### Foreign Keys
+
+```php
+Schema::on()->create('posts', function (Blueprint $t) {
+    $t->id();
+    $t->unsignedBigInteger('user_id');
+    $t->unsignedBigInteger('category_id')->nullable();
+    $t->string('title');
+    $t->timestamps();
+
+    // Basic foreign key
+    $t->foreign('user_id')
+      ->references('id')
+      ->on('users');
+
+    // With cascade rules
+    $t->foreign('user_id')
+      ->references('id')
+      ->on('users')
+      ->onDelete('CASCADE')
+      ->onUpdate('CASCADE');
+
+    // Set null on delete
+    $t->foreign('category_id')
+      ->references('id')
+      ->on('categories')
+      ->onDelete('SET NULL');
+
+    // Custom constraint name
+    $t->foreign('user_id')
+      ->references('id')
+      ->on('users')
+      ->onDelete('CASCADE')
+      ->name('fk_posts_user');
+});
+```
+
+Available `onDelete()` / `onUpdate()` actions: `CASCADE`, `SET NULL`, `RESTRICT`, `NO ACTION`, `SET DEFAULT`
+
+---
+
+### Modifying Tables
+
+Add columns to an existing table:
+
+```php
+Schema::on()->table('users', function (Blueprint $t) {
+    $t->string('phone', 20)->nullable();
+    $t->string('avatar')->nullable();
+    $t->tinyInteger('email_verified')->default(0);
+});
+```
+
+> **Note:** Only `ADD COLUMN` is supported across all drivers. `DROP COLUMN` and `RENAME COLUMN` require `Schema::statement()` and are driver-specific.
+
+---
+
+### Dropping Tables
+
+```php
+Schema::on()->drop('sessions');           // error if table does not exist
+Schema::on()->dropIfExists('cache');      // safe — no error if missing
+```
+
+---
+
+### Renaming Tables
+
+```php
+Schema::on()->rename('user_roles', 'role_user');
+```
+
+---
+
+### Inspecting Tables
+
+```php
+if (!Schema::on()->hasTable('users')) {
+    Schema::on()->create('users', function (Blueprint $t) {
+        $t->id();
+        $t->string('name');
+    });
+}
+
+if (!Schema::on()->hasColumn('users', 'phone')) {
+    Schema::on()->table('users', function (Blueprint $t) {
+        $t->string('phone')->nullable();
+    });
+}
+```
+
+---
+
+### Raw Statements
+
+```php
+Schema::on()->statement('CREATE FULLTEXT INDEX idx_search ON posts (title, body)');
+Schema::on()->statement('PRAGMA foreign_keys = ON');       // SQLite
+Schema::on()->statement('ALTER TABLE users MODIFY COLUMN bio MEDIUMTEXT');
+```
+
+---
+
+### Multiple Connections
+
+All Schema methods are available on any registered connection via `Schema::on('name')`:
+
+```php
+Schema::on('default')->create('users', function (Blueprint $t) { ... });
+Schema::on('analytics')->create('events', function (Blueprint $t) { ... });
+Schema::on('read')->hasTable('users');
+Schema::on('warehouse')->dropIfExists('temp');
+Schema::on('replica')->rename('orders_old', 'orders_archive');
+```
+
+Calling `Schema::on()` with no argument uses the current default connection (see
+[Connection Management](#connection-management)). The connection must already be
+registered with `Connection::add()` — `Schema` throws a `SchemaException` naming
+the missing connection rather than failing deeper down.
+
+---
+
+### Custom Grammar
+
+Register a grammar for a driver not built in (e.g. Oracle):
+
+```php
+use Laika\Engine\Model\Schema\Grammars\Grammar;
+use Laika\Engine\Model\Schema\Blueprint;
+
+class OracleGrammar extends Grammar
+{
+    public function compileCreate(Blueprint $blueprint): string { /* ... */ }
+    public function compileAddColumns(Blueprint $blueprint): string { /* ... */ }
+    public function compileDrop(string $table): string { /* ... */ }
+    public function compileDropIfExists(string $table): string { /* ... */ }
+    public function compileTableExists(): string { /* ... */ }
+    public function compileColumnExists(): string { /* ... */ }
+    public function compileRenameTable(string $from, string $to): string { /* ... */ }
+}
+
+// Register against the canonical driver name ('oci', not 'oracle').
+Schema::registerGrammar('oci', OracleGrammar::class);
+
+// Now Schema::on('oracle') uses your grammar
+Schema::on('oracle')->create('users', function (Blueprint $t) {
+    $t->id();
+    $t->string('name');
+});
+```
+
+---
+
+## SQL Converter
+
+Translate existing SQL from one driver dialect to another — a one-line
+`CREATE TABLE`, a `.sql` file, or a multi-gigabyte `mysqldump` backup.
+
+```php
+use Laika\Engine\Model\Converter;
+
+$converter = new Converter(from: 'mysql', to: 'pgsql');
+
+echo $converter->convert("CREATE TABLE `t` (`id` int unsigned NOT NULL AUTO_INCREMENT)");
+// CREATE TABLE "t" (
+//   "id" SERIAL NOT NULL
+// );
+```
+
+Driver aliases work exactly as they do in connection config, so
+`new Converter('mariadb', 'postgres')` is the same as `new Converter('mysql', 'pgsql')`.
+Supported targets are `mysql`, `pgsql`, `sqlite`, `sqlsrv`, `oci` and `firebird` —
+every driver with a Schema grammar. Oracle and Firebird are targets only: see
+[Driver Reference](#driver-reference) for their version floors.
+
+### Converting a dump
+
+`convert()` returns the whole result as a string, which is fine for a statement
+or a small file. For anything large use `stream()` or `convertFile()`, which
+hold **one statement at a time** in memory regardless of input size:
+
+```php
+// Constant memory — a 2 GB dump never lands in RAM.
+foreach ($converter->stream('mysql-dump.sql') as $sql) {
+    echo $sql, "\n";
+}
+
+// File to file.
+$written = $converter->convertFile('mysql-dump.sql', 'pgsql-dump.sql');
+
+// Or straight into a registered connection.
+Connection::add(['driver' => 'pgsql', /* ... */], 'target');
+$executed = $converter->apply('mysql-dump.sql', 'target');
+```
+
+Input may be a string, a file path, an open resource or an `SplFileObject`. A
+string is treated as a path only when a readable file of that name exists, so
+`convert(file_get_contents('dump.sql'))` and `convert('dump.sql')` both do what
+you mean.
+
+`apply()` disables foreign key checks for the duration so the dump's table order
+does not matter, re-enables them even if a statement throws, and refuses to run
+against a connection whose driver is not the converter's target.
+
+### Migrating between live databases
+
+`migrate()` joins the two halves together: it exports the source database as
+plain SQL, converts it, and executes it against the target — no dump file to
+manage by hand.
+
+```php
+Connection::add(['driver' => 'mysql', /* ... */], 'legacy');
+Connection::add(['driver' => 'pgsql', /* ... */], 'modern');
+
+// Dialects are read from the connections, so they cannot disagree.
+$executed = Converter::between('legacy', 'modern')->migrate();
+
+// Or on a converter you built yourself:
+$executed = (new Converter('mysql', 'pgsql'))->migrate('legacy', 'modern');
+
+// Keep the intermediate SQL for auditing instead of discarding it.
+Converter::between('legacy', 'modern')->migrate(keep: __DIR__ . '/migration.sql');
+```
+
+The source is only read from. The **target is overwritten**: the generated SQL
+drops each table before recreating it, so an existing table of the same name is
+replaced. Without `keep:` the intermediate file is a temp file, removed
+afterwards even if the migration fails partway.
+
+Both connections are checked before anything runs — a source or target whose
+driver disagrees with the converter's dialects throws rather than producing
+garbage deep inside the parser.
+
+#### Source support
+
+`Backup::dump()` produces the SQL, and is deliberately separate from
+`Backup::create()`. `create()` writes whatever the engine's own restore tooling
+expects — a binary file copy for SQLite, a `.bak` for SQL Server — which is
+right for a same-engine round trip but unreadable to anything else.
+
+| Source driver | How `dump()` exports | Needs |
+|---|---|---|
+| `mysql` / `mariadb` | `mysqldump` | `mysqldump` on PATH |
+| `pgsql` | `pg_dump --inserts --no-owner --no-privileges` | `pg_dump` on PATH |
+| `sqlite` | `sqlite_master` + generated INSERTs | nothing |
+| `sqlsrv` | `information_schema` + generated INSERTs | nothing |
+| `firebird` / `oci` | not supported as a *source* — throws | — |
+
+Two notes worth knowing:
+
+- **PostgreSQL sources prefer `--inserts`**, which `dump()` passes for you.
+  Plain `pg_dump` writes table data as a `COPY ... FROM stdin` bulk stream
+  instead of statements. That is read too — see below — but `--inserts` keeps
+  the intermediate file plain SQL throughout.
+- **SQLite is read over PDO, not through the `sqlite3` CLI.** Recent versions of
+  `.dump` wrap any string containing a control character in a `unistr()` call,
+  and no other engine — including the SQLite bundled with PDO — has that
+  function, so a single newline in your data would break the migration.
+
+Firebird and Oracle are conversion **targets only**. They have a Schema grammar,
+so SQL can be written *for* them, but no type lexicon to read their dialect back —
+and their export tools write binary archives (`expdp`, `gbak`) rather than SQL, so
+there would be nothing for `dump()` to hand over in any case.
+
+> **Credentials on the command line.** For MySQL and SQL Server, `Backup` passes
+> the password as a CLI argument, which is visible in the host's process list.
+> PostgreSQL uses the `PGPASSWORD` environment variable instead. Keep this in
+> mind on shared machines.
+
+### Warnings and the report
+
+The converter is **best-effort**: it converts what it can and records the rest,
+because a migration that dies on statement 40,000 of 50,000 is worse than one
+that flags twelve lossy conversions.
+
+```php
+$report = $converter->report();
+
+echo $report->summary();
+// 36 statement(s) [comment=28, database=2, drop_table=2, create_table=2, insert=2], 2 warning(s)
+
+foreach ($report->warnings() as $warning) {
+    echo "#{$warning->ordinal} [{$warning->level}] {$warning->reason}\n";
+}
+```
+
+Warnings carry a `level`: `lossy` (converted, but something was approximated),
+`passthrough` (not understood, emitted unchanged) or `skipped` (understood and
+deliberately dropped). Filter with `$report->warningsOfLevel(Warning::LEVEL_LOSSY)`.
+
+Pass `strict: true` to promote every warning to a `ConverterException` instead —
+useful for validating that a dump is fully portable before committing to it.
+
+```php
+$converter = new Converter('mysql', 'pgsql', strict: true);
+```
+
+Reuse an instance across sources by calling `$converter->reset()`.
+
+### What converts
+
+| Source | Handling |
+|---|---|
+| `CREATE TABLE` | Columns, types, defaults, nullability, comments, `PRIMARY KEY`, `UNIQUE`, `KEY`/`INDEX`, single-column `FOREIGN KEY` with `ON DELETE`/`ON UPDATE`, and table options (`ENGINE`, `CHARSET`, `COLLATE`) |
+| `CREATE INDEX` | Rewritten for the target, including the inline-vs-standalone difference |
+| `INSERT` | Extended inserts are split per row; literals are re-encoded (see below) |
+| `COPY … FROM stdin` | PostgreSQL's bulk format is decoded into `INSERT`s — tab-separated fields, `\N` for NULL, backslash escapes — one row at a time, so a block larger than memory still converts |
+| `DROP TABLE` | Split per table, `IF EXISTS` preserved |
+| `ALTER TABLE` | `ADD CONSTRAINT` for `PRIMARY KEY`, `UNIQUE` and `FOREIGN KEY`, plus PostgreSQL's `SET DEFAULT nextval()`. `ONLY` is accepted and ignored |
+| Auto-increment | `AUTO_INCREMENT` ⇄ `SERIAL`/`BIGSERIAL` ⇄ `IDENTITY(1,1)` ⇄ `INTEGER PRIMARY KEY AUTOINCREMENT` |
+| `ENUM` | Native on MySQL, `VARCHAR + CHECK` elsewhere |
+| Defaults | `now()`, `current_timestamp()`, `getdate()` and friends all normalise to `CURRENT_TIMESTAMP`; PostgreSQL `nextval()` is dropped in favour of the target's own auto-increment |
+| Unknown types | Carried through verbatim with a warning — never guessed at, never dropped |
+
+Literal re-encoding is where silent data corruption otherwise hides:
+
+- MySQL backslash escapes (`\'`) become standard doubling (`''`), because
+  PostgreSQL reads a backslash literally in a standard-conforming string.
+- `0xDEADBEEF` becomes `X'DEADBEEF'` on SQLite and `'\xdeadbeef'::bytea` on PostgreSQL.
+- `0`/`1` into a `BOOLEAN` column becomes `FALSE`/`TRUE` on PostgreSQL, which
+  rejects the numeric form. This is why the converter tracks column types from
+  the `CREATE TABLE` statements it has already seen.
+- MySQL zero dates (`'0000-00-00'`) become `NULL` with a warning; PostgreSQL
+  rejects them outright.
+
+> **Binary columns.** Take dumps with `mysqldump --hex-blob`. Without it,
+> mysqldump writes binary data as an escaped string literal, which arrives in
+> the target as text rather than a blob.
+
+### What does not convert
+
+Views, triggers, stored procedures and functions; dialect-specific expressions
+inside `SELECT` (`IFNULL` vs `COALESCE`); partitioning; generated columns;
+composite foreign keys; `CHECK`, `FULLTEXT` and `SPATIAL` constraints. Each is
+detected and reported — passed through unchanged where that is safe, dropped
+with a warning where it is not.
+
+`CREATE DATABASE`, `USE` and session statements (`SET NAMES`, `START TRANSACTION`,
+`PRAGMA`, `SELECT pg_catalog.set_config()`) are dropped: the target database is
+chosen by the connection, and the target manages its own session. So are psql
+meta-commands (`\restrict`, `\unrestrict`, `\connect`) — they are client
+instructions rather than SQL.
+
+`CREATE SEQUENCE` and `ALTER SEQUENCE` are dropped too, but not the meaning:
+PostgreSQL keeps a serial column's identity in a separate sequence object that
+MySQL and SQLite have no equivalent for, so the converter reads the accompanying
+`SET DEFAULT nextval()` and re-applies it as the target's own auto-increment.
+
+> **A PostgreSQL source needs a target that supports `ALTER TABLE ADD CONSTRAINT`.**
+> Unlike mysqldump, pg_dump does not write a self-contained `CREATE TABLE` — it
+> emits a bare table and reattaches the primary key, the unique constraints and
+> the identity afterwards. MySQL, PostgreSQL and SQL Server all accept that.
+> **SQLite cannot add a constraint to an existing table**, so a pgsql → sqlite
+> migration loses its primary key and foreign keys; each loss is reported in
+> `report()` rather than passing silently.
+
+---
+
+## Log
+
+Every query executed by `Model` and `Schema` is recorded in `Log`.
+
+```php
+use Laika\Engine\Model\Log;
+
+// Get all queries grouped by connection
+$all = Log::get();
+// ['default' => ['SELECT * FROM ...', 'INSERT INTO ...'], 'read' => [...]]
+
+// Count total queries across all connections
+$total = Log::count();
+
+// Add a manual entry
+Log::add('SELECT 1', 'default');
+Log::add(['SELECT 1', 'SELECT 2'], 'read');
+```
+
+---
+
+## Driver Reference
+
+Both columns of driver keys are accepted in config. The **canonical** name is what
+`Connection::driver()` reports and what `Schema::registerGrammar()` expects.
+
+| Canonical | Aliases accepted | Database | DSN format | Schema grammar |
+|---|---|---|---|---|
+| `mysql` | `mariadb` | MySQL, MariaDB | `mysql:host=...;port=...;dbname=...;charset=...` | built in |
+| `pgsql` | `postgres` | PostgreSQL | `pgsql:host=...;port=...;dbname=...` | built in |
+| `sqlite` | `sqlite3` | SQLite | `sqlite:/path/to/file` or `sqlite::memory:` | built in |
+| `sqlsrv` | — | SQL Server | `sqlsrv:Server=...;Database=...` | built in |
+| `oci` | `oracle` | Oracle | `oci:dbname=//host:port/service` | built in (12c+) |
+| `firebird` | `ibase` | Firebird | `firebird:dbname=host/port:/path/to/db` | built in (3.0+) |
+
+Every driver now ships with a grammar; [`Schema::registerGrammar()`](#custom-grammar)
+remains available to override one or to add a grammar for a custom driver.
+
+**Oracle and Firebird carry version floors.** Both grammars emit
+`GENERATED BY DEFAULT AS IDENTITY`, which needs **Oracle 12c or later** and
+**Firebird 3.0 or later**; on older releases an auto-numbered column needs a
+sequence/generator plus a `BEFORE INSERT` trigger, which these grammars do not
+write. Firebird 3 also caps identifiers at 31 characters, so generated index and
+constraint names longer than that are truncated with a short hash suffix to keep
+them unique. Neither engine has `DROP TABLE IF EXISTS`, so that compiles to a
+PL/SQL block or an `EXECUTE BLOCK` guarded on `RDB$RELATIONS`.
+
+**Firebird cannot rename a table.** `Schema::rename()` throws a `SchemaException`
+there rather than emitting SQL that cannot work — recreate the table, copy the
+rows and drop the original.
+
+Identifiers are quoted and keep the case you give them, matching what the query
+builder emits, so `Schema` and `Model` always agree on a name. Both engines fold
+*unquoted* identifiers to upper case, so a bare `SELECT * FROM users` typed
+straight into SQL\*Plus or isql will not find a table created as `users`.
+
+Two further differences apply to both: `Model::insert()` sends rows one statement
+at a time (neither database accepts multi-row `VALUES`), and it returns `''`
+rather than an id, since both require an explicit sequence/generator name.
+
+### PDO options
+
+Per-connection PDO attributes go in the `options` key and **override** the
+library defaults (`ERRMODE_EXCEPTION`, `FETCH_ASSOC`, `EMULATE_PREPARES => false`):
+
+```php
+Connection::add([
+    'driver'   => 'mysql',
+    'database' => 'myapp',
+    'options'  => [
+        PDO::ATTR_PERSISTENT => true,
+        PDO::ATTR_TIMEOUT    => 5,
+    ],
+]);
+```
+
+### Type mapping per driver
+
+| Blueprint type | MySQL | PostgreSQL | SQLite | SQL Server |
+|---|---|---|---|---|
+| `id()` | `INT UNSIGNED AUTO_INCREMENT` | `SERIAL` | `INTEGER PRIMARY KEY AUTOINCREMENT` | `INT IDENTITY(1,1)` |
+| `bigId()` | `BIGINT UNSIGNED AUTO_INCREMENT` | `BIGSERIAL` | `INTEGER PRIMARY KEY AUTOINCREMENT` | `BIGINT IDENTITY(1,1)` |
+| `boolean()` | `TINYINT(1)` | `BOOLEAN` | `INTEGER` | `BIT` |
+| `json()` | `JSON` | `JSONB` | `TEXT` | `NVARCHAR(MAX)` |
+| `string()` | `VARCHAR(n)` | `VARCHAR(n)` | `VARCHAR(n)` | `NVARCHAR(n)` |
+| `text()` | `TEXT` | `TEXT` | `TEXT` | `NVARCHAR(MAX)` |
+| `longText()` | `LONGTEXT` | `TEXT` | `TEXT` | `NVARCHAR(MAX)` |
+| `binary()` | `BLOB` | `BYTEA` | `BLOB` | `VARBINARY(MAX)` |
+| `uuid()` / `uid()` | `CHAR(38)` | `UUID` | `TEXT` | `UNIQUEIDENTIFIER` |
+| `dateTime()` | `DATETIME` | `TIMESTAMP` | `TEXT` | `DATETIME2` |
+| `enum()` | `ENUM('a','b')` | `VARCHAR(255) CHECK (col IN ('a','b'))` | `VARCHAR(255) CHECK (col IN ('a','b'))` | `VARCHAR(255) CHECK (col IN ('a','b'))` |
+| `set()` | `SET('a','b')` | `TEXT` | `TEXT` | `TEXT` |
+
+### LIMIT / OFFSET per driver
+
+| Driver | Syntax |
+|---|---|
+| MySQL / MariaDB / PostgreSQL / SQLite | `LIMIT n OFFSET m` |
+| SQL Server | `SELECT TOP n` / `OFFSET m ROWS FETCH NEXT n ROWS ONLY` |
+| Oracle 12c+ | `FETCH FIRST n ROWS ONLY` / `OFFSET m ROWS FETCH NEXT n ROWS ONLY` |
+| Firebird | `ROWS n` / `ROWS start TO end` |
+
+---
+
+## Security
+
+- **All values** are bound via PDO prepared statements — never interpolated into SQL.
+- **All identifiers** (table names, column names) are validated against `/^[a-zA-Z_][a-zA-Z0-9_]*$/` and wrapped in driver-specific quote characters (`` ` `` for MySQL, `"` for PostgreSQL/SQLite, `[]` for SQL Server).
+- **`table.column` notation** is handled correctly — the dot is never stripped.
+- **WHERE operators** in `where()` and `having()` are validated against a strict allowlist: `=`, `!=`, `<>`, `<`, `>`, `<=`, `>=`, `LIKE`, `NOT LIKE`.
+- **JOIN operators** are validated against: `=`, `!=`, `<>`, `<`, `>`, `<=`, `>=`.
+- **JOIN types** are validated against: `LEFT`, `RIGHT`, `INNER`.
+- **ORDER direction** is validated — only `ASC` and `DESC` are accepted.
+- `update()` and `delete()` require a WHERE clause — calling either without one throws `InvalidArgumentException`, preventing accidental full-table mutations.
+- `unix_socket` is blocked for non-localhost hosts with a clear exception.
+- **Timezones** passed to `Connection::applyTimezone()` or the MySQL `timezone`
+  config key are validated against `/^[A-Za-z0-9_\/+\-:]+$/` before reaching SQL.
+  Neither MySQL nor PostgreSQL accepts a bound parameter in a `SET` statement, so
+  this allowlist is what keeps the statement safe.

@@ -1,0 +1,66 @@
+<?php
+/**
+ * Laika Framework
+ * Author: Showket Ahmed
+ * Email: riyadhtayf@gmail.com
+ * License: MIT
+ * This file is part of the Laika PHP Framework.
+ * For the full copyright and license information, please view the LICENSE file that was distributed with this source code.
+ */
+
+declare(strict_types=1);
+
+namespace App\Schema;
+
+use App\Model\{{model}};
+use Laika\Engine\Model\Schema\Schema;
+use Laika\Engine\Model\Schema\Blueprint;
+use Laika\Engine\Model\Contract\SchemaAbstract;
+use Laika\Engine\Core\Exceptions\SchemaException;
+
+class {{class}} extends SchemaAbstract
+{
+    /** @var string Database Table Name */
+    protected string $table = '{{table}}';
+
+    /** @var string Database Connection Name */
+    protected string $connection = '{{con}}';
+
+    public function up(): void
+    {
+        Schema::on($this->connection)->createIfNotExists($this->table, function (Blueprint $t) {
+            $t->id('{{id}}');
+            $t->string('{{uid}}');
+            $t->timestamps();
+            $t->enum('deleted', ['yes', 'no'])->default('no');
+            // default(null): timestamp() defaults to CURRENT_TIMESTAMP, which
+            // would mark every new row as soft-deleted
+            $t->timestamp('deleted_at')->nullable()->default(null);
+
+            $t->index('deleted');
+        });
+    }
+
+    public function seed(): void
+    {
+        try {
+            $model = new {{model}}();
+
+            // app:migrate runs seed() every time, so only seed an empty table
+            if ($model->withTrash()->exists()) {
+                return;
+            }
+
+            $arr = [
+                '{{uid}}'       =>  $model->uid(),
+                'deleted'   =>  'yes'
+            ];
+
+            $model->transaction(function ({{model}} $m) use ($arr) {
+                $m->insert($arr);
+            });
+        } catch (\Throwable $e) {
+            if (DEBUG) throw new SchemaException("Failed to seed data. {$e->getMessage()}", (int) $e->getCode(), $e);
+        }
+    }
+}
