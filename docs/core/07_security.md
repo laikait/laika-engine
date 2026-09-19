@@ -2,7 +2,7 @@
 
 ## Vault
 
-**Relay:** `Laika\Engine\Services\Vault` (`vault`). **Class:** `Laika\Engine\Core\Helper\Vault`.
+**Relay:** `Laika\Engine\Services\Vault` (`vault`). **Class:** `Laika\Engine\Helper\Vault`.
 
 Encryption, keyed hashing, password hashing, signing and random tokens. Requires `ext-openssl`.
 
@@ -43,7 +43,7 @@ The ciphertext records which cipher made it, so `decrypt()` handles any supporte
 
 ## Token (JWT)
 
-**Relay:** `Laika\Engine\Services\Token` (`token`). **Class:** `Laika\Engine\Core\Generator\Token`.
+**Relay:** `Laika\Engine\Services\Token` (`token`). **Class:** `Laika\Engine\Generator\Token`.
 
 Stateless tokens that carry a user payload.
 
@@ -75,12 +75,12 @@ For revocable, database-backed API tokens, see the token guard in [laika-auth](h
 
 ## Uid
 
-**Relay:** `Laika\Engine\Services\Uid` (`uid`). **Class:** `Laika\Engine\Core\Generator\Uid` (static).
+**Relay:** `Laika\Engine\Services\Uid` (`uid`). **Class:** `Laika\Engine\Generator\Uid` (static).
 
 RFC 4122 version 4 UUIDs, valid on every database driver laika-model supports.
 
 ```php
-use Laika\Engine\Core\Generator\Uid;
+use Laika\Engine\Generator\Uid;
 
 Uid::make();                         // "3f2b8c1e-9a4d-4c2f-8e7b-1d6a0f5c9b21"
 Uid::isValid($routeParam);           // reject malformed ids before querying
@@ -98,7 +98,7 @@ Uid::stamp([['name' => 'A'], ['name' => 'B']]); // adds a 'uid' to each row lack
 
 ## Unique
 
-**Relay:** `Laika\Engine\Services\Unique` (`unique`). **Class:** `Laika\Engine\Core\Generator\Unique`.
+**Relay:** `Laika\Engine\Services\Unique` (`unique`). **Class:** `Laika\Engine\Generator\Unique`.
 
 Readable reference numbers built from date tokens and random characters.
 
@@ -131,7 +131,7 @@ Input sanitizers belong to the request cycle. They're covered in [HTTP → Sanit
 
 ## Regex
 
-**Relay:** `Laika\Engine\Services\Regex` (`regex`). **Class:** `Laika\Engine\Core\Regex\Regex`.
+**Relay:** `Laika\Engine\Services\Regex` (`regex`). **Class:** `Laika\Engine\Regex\Regex`.
 
 Named, reusable regex rules. The constructor registers every rule class in `src/Regex/Rules`. A rule's name is its class name without `Rule`, lowercased.
 
@@ -159,6 +159,6 @@ Regex::checkRules('Abc123!');                     // ['alpha' => false, 'hasuppe
 | `checkRules(string $input): array` | Every registered rule's result for the input |
 | `addRule(Rule $rule): void` / `getRule(string $name): ?Rule` / `getRules(): array` | Registry access |
 
-A custom rule extends `Laika\Engine\Core\Regex\Abstracts\Rule`, implements `pattern(): string`, and is registered with `addRule()`. The full guide is in [src/Regex/README.MD](../src/Regex/README.MD).
+A custom rule extends `Laika\Engine\Regex\Abstracts\Rule`, implements `pattern(): string`, and is registered with `addRule()`. The full guide is in [src/Regex/README.MD](../src/Regex/README.MD).
 
 > **Note:** `PasswordRule`'s docblock says the default minimum length is 8, but the constructor default is **6**. Pass the minimum explicitly.

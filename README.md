@@ -11,11 +11,13 @@ Requires PHP 8.1+ with `ext-json`, `ext-mbstring`, `ext-openssl` and `ext-pdo`.
 
 ## Modules
 
-Everything lives under the `Laika\Engine\` namespace.
+Everything lives under the `Laika\Engine\` namespace. Core's classes sit directly
+under it (`Laika\Engine\Http\Request`, `Laika\Engine\App\Template`, …); every
+other module has its own segment.
 
 | Module    | Namespace                  | Replaces               | Docs                   |
 |-----------|----------------------------|------------------------|------------------------|
-| Core      | `Laika\Engine\Core`        | `laikait/laika-core`    | [docs/core](docs/core)       |
+| Core      | `Laika\Engine\*` (App, Http, Helper, Support, …) | `laikait/laika-core`    | [docs/core](docs/core)       |
 | Route     | `Laika\Engine\Route`       | `laikait/laika-route`   | [docs/route](docs/route)     |
 | Relay     | `Laika\Engine\Relay`       | `laikait/laika-relay`   | [docs/relay](docs/relay)     |
 | Services  | `Laika\Engine\Services`    | `laikait/laika-relay` (services) | [docs/relay](docs/relay) |
@@ -40,7 +42,7 @@ scripts.
    ```json
    "require": {
        "php": ">=8.1",
-       "laikait/laika-engine": "1.0.*"
+       "laikait/laika-engine": "2.0.*"
    }
    ```
 
@@ -61,12 +63,24 @@ scripts.
    ```bash
    grep -rlP 'Laika\\+(Auth|Cache|Cli|Core|Mailman|Model|Queue|Relay|Route|Session|Shield|Service)\b' \
        lf-* public template | xargs perl -pi -e \
-       's/Laika(\\+)(Auth|Cache|Cli|Core|Mailman|Model|Queue|Relay|Route|Session|Shield|Service)\b/Laika$1Engine$1$2/g'
+       's/Laika(\\+)Core(\\+)/Laika$1Engine$2/g; s/Laika(\\+)Service\b/Laika$1Engine$1Services/g; s/Laika(\\+)(Auth|Cache|Cli|Mailman|Model|Queue|Relay|Route|Session|Shield)\b/Laika$1Engine$1$2/g'
    ```
 
 4. Move `index.php` into `public/` and point the web server's document root at
    `public/`. `php laika app:sync` writes `public/.htaccess`, and
    `php laika nginx:server` emits a server block rooted at `public/`.
+
+## Upgrading to 2.0
+
+Core's classes moved up one level: `Laika\Engine\Core\X` is now `Laika\Engine\X`
+(for example `Laika\Engine\Core\Http\Request` → `Laika\Engine\Http\Request`).
+`Laika\Engine\Core\Model\OptionModel` is now `Laika\Engine\Model\OptionModel`.
+Nothing else was renamed. Require `"laikait/laika-engine": "2.0.*"`, then run:
+
+```bash
+grep -rlP 'Laika\\+Engine\\+Core\\+' lf-* public template | xargs perl -pi -e \
+    's/Laika(\\+)Engine(\\+)Core(\\+)/Laika$1Engine$2/g'
+```
 
 ## Extending
 
@@ -75,7 +89,7 @@ scripts.
   (database) and `MailManager::extendMailer()` / `extendReader()` register
   backends by name.
 - **Macros:** `Model`, `Blueprint`, `Request`, `Response`, `Cache` and `Url` use
-  `Laika\Engine\Core\Support\Macroable`, so `Model::macro('active', fn () => ...)`
+  `Laika\Engine\Support\Macroable`, so `Model::macro('active', fn () => ...)`
   adds a method. Relays forward macros too.
 - **Subclassing:** framework classes are open and their steps are `protected`.
   Security boundaries (`Route\Asset`, `ProxyTrust`, the Shield detectors and

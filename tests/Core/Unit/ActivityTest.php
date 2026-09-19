@@ -6,7 +6,7 @@ namespace Laika\Engine\Core\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Laika\Engine\Model\Connection;
-use Laika\Engine\Core\Log\Activity;
+use Laika\Engine\Log\Activity;
 
 final class ActivityTest extends TestCase
 {

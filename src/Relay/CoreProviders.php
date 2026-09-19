@@ -10,45 +10,45 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Relay;
 
-use Laika\Engine\Core\IP\IP;
-use Laika\Engine\Core\App\Key;
-use Laika\Engine\Core\Http\CSRF;
-use Laika\Engine\Core\Http\CORS;
-use Laika\Engine\Core\Helper\Init;
-use Laika\Engine\Core\App\Infra;
-use Laika\Engine\Core\Helper\Url;
-use Laika\Engine\Core\Helper\File;
-use Laika\Engine\Core\Helper\Date;
-use Laika\Engine\Core\Nav\Builder;
-use Laika\Engine\Core\Http\Header;
-use Laika\Engine\Core\Helper\Page;
-use Laika\Engine\Core\Helper\Hook;
-use Laika\Engine\Core\Helper\Math;
-use Laika\Engine\Core\Regex\Regex;
-use Laika\Engine\Core\Log\Activity;
-use Laika\Engine\Core\Http\Request;
-use Laika\Engine\Core\Helper\Image;
-use Laika\Engine\Core\Helper\Local;
-use Laika\Engine\Core\Helper\Vault;
-use Laika\Engine\Core\App\Resource;
-use Laika\Engine\Core\Http\Response;
-use Laika\Engine\Core\Http\Redirect;
-use Laika\Engine\Core\Generator\Uid;
-use Laika\Engine\Core\Template\Meta;
-use Laika\Engine\Core\Helper\Config;
-use Laika\Engine\Core\Helper\Cookie;
-use Laika\Engine\Core\Helper\Client;
-use Laika\Engine\Core\Helper\Upload;
-use Laika\Engine\Core\Generator\Icon;
-use Laika\Engine\Core\Template\Asset;
-use Laika\Engine\Core\Generator\Token;
-use Laika\Engine\Core\Helper\MimeType;
-use Laika\Engine\Core\Template\Context;
-use Laika\Engine\Core\Helper\Directory;
-use Laika\Engine\Core\Generator\Unique;
-use Laika\Engine\Core\Model\OptionModel;
-use Laika\Engine\Core\Exceptions\Handler;
-use Laika\Engine\Core\Helper\PhpMetadataParser;
+use Laika\Engine\IP\IP;
+use Laika\Engine\App\Key;
+use Laika\Engine\Http\CSRF;
+use Laika\Engine\Http\CORS;
+use Laika\Engine\Helper\Init;
+use Laika\Engine\App\Infra;
+use Laika\Engine\Helper\Url;
+use Laika\Engine\Helper\File;
+use Laika\Engine\Helper\Date;
+use Laika\Engine\Nav\Builder;
+use Laika\Engine\Http\Header;
+use Laika\Engine\Helper\Page;
+use Laika\Engine\Helper\Hook;
+use Laika\Engine\Helper\Math;
+use Laika\Engine\Regex\Regex;
+use Laika\Engine\Log\Activity;
+use Laika\Engine\Http\Request;
+use Laika\Engine\Helper\Image;
+use Laika\Engine\Helper\Local;
+use Laika\Engine\Helper\Vault;
+use Laika\Engine\App\Resource;
+use Laika\Engine\Http\Response;
+use Laika\Engine\Http\Redirect;
+use Laika\Engine\Generator\Uid;
+use Laika\Engine\Template\Meta;
+use Laika\Engine\Helper\Config;
+use Laika\Engine\Helper\Cookie;
+use Laika\Engine\Helper\Client;
+use Laika\Engine\Helper\Upload;
+use Laika\Engine\Generator\Icon;
+use Laika\Engine\Template\Asset;
+use Laika\Engine\Generator\Token;
+use Laika\Engine\Helper\MimeType;
+use Laika\Engine\Template\Context;
+use Laika\Engine\Helper\Directory;
+use Laika\Engine\Generator\Unique;
+use Laika\Engine\Model\OptionModel;
+use Laika\Engine\Exceptions\Handler;
+use Laika\Engine\Helper\PhpMetadataParser;
 
 /**
  * CoreServiceProvider — Registers all built-in Laika core services.
@@ -57,10 +57,10 @@ use Laika\Engine\Core\Helper\PhpMetadataParser;
  * You do not need to add it to your config/app.php providers array.
  *
  * Services registered include (see register() for the full list):
- *   - config   → Laika\Engine\Core\Helper\Config
- *   - date     → Laika\Engine\Core\Helper\Date
- *   - csrf     → Laika\Engine\Core\Http\CSRF
- *   - init     → Laika\Engine\Core\Helper\Init (session driver shortcuts)
+ *   - config   → Laika\Engine\Helper\Config
+ *   - date     → Laika\Engine\Helper\Date
+ *   - csrf     → Laika\Engine\Http\CSRF
+ *   - init     → Laika\Engine\Helper\Init (session driver shortcuts)
  *
  * Sessions are not a registered service: use Laika\Engine\Session\Session directly.
  */

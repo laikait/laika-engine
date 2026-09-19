@@ -3,8 +3,8 @@
 
 use Laika\Engine\Queue\Worker;
 use Laika\Engine\Queue\Abstracts\Job;
-use Laika\Engine\Core\Worker\Queue;
-use Laika\Engine\Core\System\MemoryManager;
+use Laika\Engine\Worker\Queue;
+use Laika\Engine\System\MemoryManager;
 use Laika\Engine\Services\Infra;
 
 /**
@@ -72,7 +72,7 @@ $trusted = Infra::getQueueJobsClasses();
 if ($trusted) Job::registerTrustedClasses($trusted);
 
 // Which backend to run against, from lf-config/queue.php's 'driver' and
-// 'failed_driver' keys. Laika\Engine\Core\Worker\Queue is the one place that
+// 'failed_driver' keys. Laika\Engine\Worker\Queue is the one place that
 // turns those names into objects -- the web app pushes through it too -- so an
 // application driver registered with Queue::extend() works here unchanged.
 // 'database' is the worker's historical default when 'driver' is unset.
@@ -90,6 +90,6 @@ fwrite(STDOUT, "[laika-queue] worker started on queue '{$queue}'\n");
 
 // No memoryLimit passed — Worker::work() auto-derives its soft-restart
 // threshold (~90% of PHP's actual memory_limit) via
-// Laika\Engine\Core\System\MemoryManager, reading the exact ini value the
+// Laika\Engine\System\MemoryManager, reading the exact ini value the
 // MemoryManager::apply() call above just set from CLI_MEMORY_LIMIT.
 $worker->work($queue);

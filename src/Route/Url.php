@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Route;
 
-use Laika\Engine\Core\Support\Macroable;
+use Laika\Engine\Support\Macroable;
 
 class Url
 {

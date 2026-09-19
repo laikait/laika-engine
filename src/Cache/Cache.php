@@ -19,7 +19,7 @@ use Laika\Engine\Cache\Driver\MemcachedDriver;
 use Laika\Engine\Cache\Driver\RedisDriver;
 use Laika\Engine\Cache\Exceptions\CacheException;
 use Throwable;
-use Laika\Engine\Core\Support\Macroable;
+use Laika\Engine\Support\Macroable;
 
 /**
  * The cache the application talks to.
@@ -297,7 +297,7 @@ class Cache
     protected function redisClient(): \Redis
     {
         $settings = $this->connectionConfig('redis');
-        $connection = 'Laika\\Engine\\Core\\Storage\\Connection\\RedisConnection';
+        $connection = 'Laika\\Engine\\Storage\\Connection\\RedisConnection';
 
         if (class_exists($connection)) {
             return $connection::make($settings);
@@ -340,7 +340,7 @@ class Cache
     protected function memcachedClient(): \Memcached
     {
         $settings = $this->connectionConfig('memcached');
-        $connection = 'Laika\\Engine\\Core\\Storage\\Connection\\MemcachedConnection';
+        $connection = 'Laika\\Engine\\Storage\\Connection\\MemcachedConnection';
 
         if (class_exists($connection)) {
             return $connection::make($settings);

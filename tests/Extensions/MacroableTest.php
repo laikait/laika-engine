@@ -12,7 +12,7 @@ use Laika\Engine\Model\Schema\Schema;
 use Laika\Engine\Model\Schema\Blueprint;
 use Laika\Engine\Relay\Relay;
 use Laika\Engine\Relay\RelayRegistry;
-use Laika\Engine\Core\Support\Macroable;
+use Laika\Engine\Support\Macroable;
 
 class MacroTarget
 {

@@ -2,7 +2,7 @@
 
 ## Url
 
-**Relay:** `Laika\Engine\Services\Url` (`url`). **Class:** `Laika\Engine\Core\Helper\Url`.
+**Relay:** `Laika\Engine\Services\Url` (`url`). **Class:** `Laika\Engine\Helper\Url`.
 
 Built once per request from `$_SERVER`. It works out the scheme, host, port and the sub-directory the app is installed in, so links stay correct behind proxies and in sub-folder installs.
 
@@ -56,7 +56,7 @@ Every candidate is validated before use, since the Host header is client-control
 
 ## Page
 
-**Relay:** `Laika\Engine\Services\Page` (`page`). **Class:** `Laika\Engine\Core\Helper\Page`.
+**Relay:** `Laika\Engine\Services\Page` (`page`). **Class:** `Laika\Engine\Helper\Page`.
 
 Pagination helpers built on the `?page=` query value.
 
@@ -70,7 +70,7 @@ Pagination helpers built on the `?page=` query value.
 
 ## Visitor (Client)
 
-**Relay:** `Laika\Engine\Services\Visitor` (`visitor`). **Class:** `Laika\Engine\Core\Helper\Client`.
+**Relay:** `Laika\Engine\Services\Visitor` (`visitor`). **Class:** `Laika\Engine\Helper\Client`.
 
 Information about the client making the request.
 
@@ -92,7 +92,7 @@ Information about the client making the request.
 
 ## Cookie
 
-**Relay:** `Laika\Engine\Services\Cookie` (`cookie`). **Class:** `Laika\Engine\Core\Helper\Cookie`.
+**Relay:** `Laika\Engine\Services\Cookie` (`cookie`). **Class:** `Laika\Engine\Helper\Cookie`.
 
 ```php
 use Laika\Engine\Services\Cookie;
@@ -127,7 +127,7 @@ Behaviour to know:
 
 ## IP Utilities
 
-**Relay:** `Laika\Engine\Services\IP` (`ip`). **Classes:** `Laika\Engine\Core\IP\IP`, `Laika\Engine\Core\IP\Version\IPv4`, `Laika\Engine\Core\IP\Version\IPv6`.
+**Relay:** `Laika\Engine\Services\IP` (`ip`). **Classes:** `Laika\Engine\IP\IP`, `Laika\Engine\IP\Version\IPv4`, `Laika\Engine\IP\Version\IPv6`.
 
 CIDR maths for both address families.
 
@@ -158,6 +158,6 @@ What the network objects offer:
 - **Enumeration:** host generators and `toArray()`
 - **Other:** reverse-DNS zones and `info()`
 
-Invalid input throws `Laika\Engine\Core\Exceptions\IPException`.
+Invalid input throws `Laika\Engine\Exceptions\IPException`.
 
 The full guide, with every method, the `/31` and `/32` edge cases, and IPv6 examples, is in [src/IP/README.MD](../src/IP/README.MD).

@@ -4,7 +4,7 @@
 
 ## Template
 
-**Class:** `Laika\Engine\Core\App\Template`. It's not a relay; controllers create one per render.
+**Class:** `Laika\Engine\App\Template`. It's not a relay; controllers create one per render.
 
 A thin wrapper around Twig 3:
 
@@ -16,7 +16,7 @@ A thin wrapper around Twig 3:
 | Default file extension | `.twig` |
 
 ```php
-use Laika\Engine\Core\App\Template;
+use Laika\Engine\App\Template;
 
 $tpl = new Template();
 $tpl->assign('title', 'Orders');
@@ -89,7 +89,7 @@ Every render receives these variables, computed at render time. A variable you `
 
 ## Asset
 
-**Relay:** `Laika\Engine\Services\Asset` (`template.asset`). **Class:** `Laika\Engine\Core\Template\Asset` (static). **Helpers:** `enqueue_style()`, `enqueue_script()`, `print_styles()`, `print_scripts()`.
+**Relay:** `Laika\Engine\Services\Asset` (`template.asset`). **Class:** `Laika\Engine\Template\Asset` (static). **Helpers:** `enqueue_style()`, `enqueue_script()`, `print_styles()`, `print_scripts()`.
 
 | Method | Does |
 |---|---|
@@ -102,7 +102,7 @@ Relative sources resolve against `Url::base()`. A handle registered twice keeps 
 
 ## Meta
 
-**Relay:** `Laika\Engine\Services\Meta` (`template.meta`). **Class:** `Laika\Engine\Core\Template\Meta` (static). **Helpers:** `enqueue_meta()`, `print_metas()`.
+**Relay:** `Laika\Engine\Services\Meta` (`template.meta`). **Class:** `Laika\Engine\Template\Meta` (static). **Helpers:** `enqueue_meta()`, `print_metas()`.
 
 | Method | Does |
 |---|---|
@@ -111,7 +111,7 @@ Relative sources resolve against `Url::base()`. A handle registered twice keeps 
 
 ## Context
 
-**Relay:** `Laika\Engine\Services\Context` (`template.context`). **Class:** `Laika\Engine\Core\Template\Context` (static). **Helpers:** `context_add()`, `context_get()`.
+**Relay:** `Laika\Engine\Services\Context` (`template.context`). **Class:** `Laika\Engine\Template\Context` (static). **Helpers:** `context_add()`, `context_get()`.
 
 A request-wide key/value store for passing data to templates from anywhere: pipelines, hooks, services.
 
@@ -125,7 +125,7 @@ Keys must match `\w+` and are lowercased; anything else throws `ContextException
 
 ## Nav
 
-**Relay:** `Laika\Engine\Services\Nav` (`nav`). **Classes:** `Laika\Engine\Core\Nav\Builder`, `Laika\Engine\Core\Nav\Helper\Item`.
+**Relay:** `Laika\Engine\Services\Nav` (`nav`). **Classes:** `Laika\Engine\Nav\Builder`, `Laika\Engine\Nav\Helper\Item`.
 
 Menus built from named routes. The active item is detected from the current URL.
 
@@ -161,12 +161,12 @@ The full guide, covering active-state rules, conditional display, styling and se
 
 ## Icon
 
-**Relay:** `Laika\Engine\Services\Icon` (`icon`). **Class:** `Laika\Engine\Core\Generator\Icon` (static).
+**Relay:** `Laika\Engine\Services\Icon` (`icon`). **Class:** `Laika\Engine\Generator\Icon` (static).
 
 Inline SVG icons (Bootstrap Icons path data, MIT). Nothing is loaded from a CDN, and icons inherit the text colour through `currentColor`.
 
 ```php
-use Laika\Engine\Core\Generator\Icon;
+use Laika\Engine\Generator\Icon;
 
 Icon::svg('trash', 20);    // <svg … width="20" height="20" …>…</svg>
 Icon::trash(20);           // the same, through the magic method
@@ -191,7 +191,7 @@ Available icons:
 Twig autoescapes filter output, so register the filter yourself and mark it raw:
 
 ```php
-$tpl->addFilter('icon', [\Laika\Engine\Core\Generator\Icon::class, 'svg']);
+$tpl->addFilter('icon', [\Laika\Engine\Generator\Icon::class, 'svg']);
 ```
 
 ```twig

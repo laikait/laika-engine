@@ -11,7 +11,7 @@
 - **Data:** the options table and the activity log
 - **Error handling** and the **global helper functions** templates and apps rely on
 
-Most of it is reached through relays, static proxy classes in the `Laika\Engine\Services` namespace, for example `Url::base()` or `Request::input('email')`. Each relay forwards to a shared instance of a class in `Laika\Engine\Core\...`.
+Most of it is reached through relays, static proxy classes in the `Laika\Engine\Services` namespace, for example `Url::base()` or `Request::input('email')`. Each relay forwards to a shared instance of a class in `Laika\Engine\...`.
 
 | Page | Covers |
 |---|---|
@@ -37,6 +37,6 @@ Three components keep their own detailed READMEs next to the code:
 
 ## Conventions in These Pages
 
-- **Relay** means the `Laika\Engine\Services\*` class you call statically. **Class** is the `Laika\Engine\Core\*` class that does the work.
+- **Relay** means the `Laika\Engine\Services\*` class you call statically. **Class** is the `Laika\Engine\*` class that does the work.
 - Method tables list signatures exactly as they appear in the source.
 - **Note** boxes flag behaviour that is easy to get wrong. They describe the code as it is, not as it might be expected to work.

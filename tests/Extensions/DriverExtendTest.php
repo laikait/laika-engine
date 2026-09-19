@@ -6,7 +6,7 @@ namespace Laika\Engine\Extensions\Tests;
 
 use RuntimeException;
 use PHPUnit\Framework\TestCase;
-use Laika\Engine\Core\Worker\Queue;
+use Laika\Engine\Worker\Queue;
 use Laika\Engine\Mailman\Mailer;
 use Laika\Engine\Mailman\MailManager;
 use Laika\Engine\Mailman\Reader\Pop3Reader;

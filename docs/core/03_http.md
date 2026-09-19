@@ -2,7 +2,7 @@
 
 ## Request
 
-**Relay:** `Laika\Engine\Services\Request` (`request`). **Class:** `Laika\Engine\Core\Http\Request`.
+**Relay:** `Laika\Engine\Services\Request` (`request`). **Class:** `Laika\Engine\Http\Request`.
 
 Parsed once per request. The constructor reads:
 - **Query string and form fields:** `$_GET` and `$_POST`, passed through a sanitizer (see [Sanitizers](#sanitizers))
@@ -49,9 +49,9 @@ if (Request::isPost() && Request::has('title')) { /* ... */ }
 >
 > ```php
 > use Laika\Engine\Services\Request;
-> use Laika\Engine\Core\Sanitizer\NullSanitizer;
+> use Laika\Engine\Sanitizer\NullSanitizer;
 >
-> Request::swap(new \Laika\Engine\Core\Http\Request(new NullSanitizer()));
+> Request::swap(new \Laika\Engine\Http\Request(new NullSanitizer()));
 > ```
 >
 > `raw()` always holds the original body.
@@ -76,10 +76,10 @@ Errors from repeated `validate()` calls and from `addError()` accumulate, so che
 
 ## Validator
 
-**Class:** `Laika\Engine\Core\Http\Validator` (static).
+**Class:** `Laika\Engine\Http\Validator` (static).
 
 ```php
-use Laika\Engine\Core\Http\Validator;
+use Laika\Engine\Http\Validator;
 
 $errors = Validator::make($data, ['name' => 'required|string|max:50']);
 // [] when valid, otherwise ['name' => ['The [name] field is required.']]
@@ -125,7 +125,7 @@ An unknown rule name throws `InvalidArgumentException`.
 
 ## Response
 
-**Relay:** `Laika\Engine\Services\Response` (`response`). **Class:** `Laika\Engine\Core\Http\Response`.
+**Relay:** `Laika\Engine\Services\Response` (`response`). **Class:** `Laika\Engine\Http\Response`.
 
 Holds the status, content type, headers and body for the current response. Controllers usually just return a string; laika-route reads the content type set here to choose how to render it. You can also build and send a response yourself.
 
@@ -158,7 +158,7 @@ Response::setStatus(404)->setHeader('X-Reason', 'missing');
 
 ## Redirect
 
-**Relay:** `Laika\Engine\Services\Redirect` (`redirect`). **Class:** `Laika\Engine\Core\Http\Redirect`.
+**Relay:** `Laika\Engine\Services\Redirect` (`redirect`). **Class:** `Laika\Engine\Http\Redirect`.
 
 ```php
 use Laika\Engine\Services\Redirect;
@@ -182,7 +182,7 @@ Both redirect methods send a `Location` header and **exit**. Allowed codes are 3
 
 ## CORS
 
-**Relay:** `Laika\Engine\Services\CORS` (`cors`). **Class:** `Laika\Engine\Core\Http\CORS` (static).
+**Relay:** `Laika\Engine\Services\CORS` (`cors`). **Class:** `Laika\Engine\Http\CORS` (static).
 
 laika-route calls `CORS::handle()` at the start of every request. Configure it in a hook file, which runs before routing:
 
@@ -217,7 +217,7 @@ To hide the `X-Powered-By` header, pass your own list to `securityHeaders()` wit
 
 ## CSRF
 
-**Relay:** `Laika\Engine\Services\CSRF` (`csrf`). **Class:** `Laika\Engine\Core\Http\CSRF`.
+**Relay:** `Laika\Engine\Services\CSRF` (`csrf`). **Class:** `Laika\Engine\Http\CSRF`.
 
 Stateless, signed, single-use tokens.
 
@@ -228,7 +228,7 @@ echo CSRF::field();                    // <input type="hidden" name="_csrf" valu
 
 try {
     CSRF::validate(CSRF::fromRequest()); // X-Csrf-Token header, else POST _csrf
-} catch (\Laika\Engine\Core\Exceptions\CSRFException $e) {
+} catch (\Laika\Engine\Exceptions\CSRFException $e) {
     // malformed, bad signature, expired, fingerprint mismatch, or already used
 }
 ```
@@ -253,7 +253,7 @@ How a token works:
 
 ## ProxyTrust
 
-**Class:** `Laika\Engine\Core\Http\ProxyTrust` (static).
+**Class:** `Laika\Engine\Http\ProxyTrust` (static).
 
 Decides whether proxy headers (`X-Forwarded-*`, `CF-Connecting-IP`, …) may be believed. They're only trusted when `REMOTE_ADDR` is one of the proxies listed in `lf-config/app.php`:
 
@@ -272,7 +272,7 @@ An empty list, which is the default, trusts nothing: correct for a server reache
 
 ## Sanitizers
 
-A sanitizer cleans request input before `Request` stores it. All of them implement `Laika\Engine\Core\Contracts\SanitizerInterface`:
+A sanitizer cleans request input before `Request` stores it. All of them implement `Laika\Engine\Contracts\SanitizerInterface`:
 
 ```php
 public function sanitize(array $data): array; // recursive
@@ -281,9 +281,9 @@ public function clean(mixed $value): mixed;   // one value
 
 | Class | Does |
 |---|---|
-| `Laika\Engine\Core\Sanitizer\InputSanitizer` (default) | Trims and removes NUL bytes, optionally truncates, then `htmlspecialchars()` |
-| `Laika\Engine\Core\Sanitizer\StripTagsSanitizer` | The same, but runs `strip_tags()` (keeping `$allowedTags`) before encoding |
-| `Laika\Engine\Core\Sanitizer\NullSanitizer` | Returns everything unchanged |
+| `Laika\Engine\Sanitizer\InputSanitizer` (default) | Trims and removes NUL bytes, optionally truncates, then `htmlspecialchars()` |
+| `Laika\Engine\Sanitizer\StripTagsSanitizer` | The same, but runs `strip_tags()` (keeping `$allowedTags`) before encoding |
+| `Laika\Engine\Sanitizer\NullSanitizer` | Returns everything unchanged |
 
 `InputSanitizer::__construct()` takes these parameters:
 - `$htmlFlags`: default `ENT_QUOTES | ENT_HTML5 | ENT_SUBSTITUTE`

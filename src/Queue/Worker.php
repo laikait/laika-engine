@@ -173,7 +173,7 @@ class Worker
      * Auto-derive the soft memory-limit threshold (MB) used by
      * stopIfMemoryExceeded() when work() isn't given an explicit one —
      * ~90% of PHP's actual current memory_limit ini setting (as read via
-     * Laika\Engine\Core\System\MemoryManager, when installed — see
+     * Laika\Engine\System\MemoryManager, when installed — see
      * laikait/laika-core), so the worker exits gracefully (for
      * supervisor/systemd to restart) before genuinely risking a hard OOM
      * mid-job, rather than a fixed number picked without knowing the real
@@ -188,11 +188,11 @@ class Worker
     {
         $fallback = 128;
 
-        if (!class_exists(\Laika\Engine\Core\System\MemoryManager::class)) {
+        if (!class_exists(\Laika\Engine\System\MemoryManager::class)) {
             return $fallback;
         }
 
-        $limit = trim((string) (new \Laika\Engine\Core\System\MemoryManager())->currentLimit());
+        $limit = trim((string) (new \Laika\Engine\System\MemoryManager())->currentLimit());
 
         if (!preg_match('/^(\d+)\s*([kmg])$/i', $limit, $m)) {
             return $fallback;

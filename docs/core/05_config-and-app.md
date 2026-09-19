@@ -4,7 +4,7 @@
 
 ## Config
 
-**Relay:** `Laika\Engine\Services\Config` (`config`). **Class:** `Laika\Engine\Core\Helper\Config` (static). **Helper:** `config()`.
+**Relay:** `Laika\Engine\Services\Config` (`config`). **Class:** `Laika\Engine\Helper\Config` (static). **Helper:** `config()`.
 
 Every `lf-config/*.php` file returns an array. `providers.php` is the exception and is skipped. All files are loaded together on first use and cached for the rest of the process.
 
@@ -32,7 +32,7 @@ File names and keys are lowercased, so `APP_NAME` and `app_name` are the same ke
 
 ## Init
 
-**Relay:** `Laika\Engine\Services\Init` (`init`). **Class:** `Laika\Engine\Core\Helper\Init`.
+**Relay:** `Laika\Engine\Services\Init` (`init`). **Class:** `Laika\Engine\Helper\Init`.
 
 Connects framework services to their `lf-config` files.
 
@@ -56,7 +56,7 @@ Init::file(['path' => APP_PATH . '/lf-storage/sessions']);
 
 ## App Key
 
-**Relay:** `Laika\Engine\Services\AppKey` (`app.key`). **Class:** `Laika\Engine\Core\App\Key`.
+**Relay:** `Laika\Engine\Services\AppKey` (`app.key`). **Class:** `Laika\Engine\App\Key`.
 
 The application secret, stored in `lf-storage/keys/app.key` with mode `0600`. [Vault](07_security.md#vault), [Token](07_security.md#token-jwt) and [CSRF](03_http.md#csrf) derive their keys from it.
 
@@ -73,7 +73,7 @@ From the command line, use `php laika secret:generate` and `php laika secret:fix
 
 ## Local (Localisation)
 
-**Relay:** `Laika\Engine\Services\Local` (`local`). **Class:** `Laika\Engine\Core\Helper\Local`. **Helper:** `local()`.
+**Relay:** `Laika\Engine\Services\Local` (`local`). **Class:** `Laika\Engine\Helper\Local`. **Helper:** `local()`.
 
 Translations are static properties of a `LANG` class, one file per language: `lf-lang/{lang}.local.php`.
 
@@ -108,7 +108,7 @@ The file is loaded with `require_once` and defines a global class, so one reques
 
 ## Hook
 
-**Relay:** `Laika\Engine\Services\Hook` (`hook`). **Class:** `Laika\Engine\Core\Helper\Hook` (static). **Helpers:** `add_hook()`, `do_hook()`, `apply_hook()`.
+**Relay:** `Laika\Engine\Services\Hook` (`hook`). **Class:** `Laika\Engine\Helper\Hook` (static). **Helpers:** `add_hook()`, `do_hook()`, `apply_hook()`.
 
 Named extension points for actions and filters.
 
@@ -132,7 +132,7 @@ Lower priorities run first; callbacks with equal priority run in registration or
 
 ## Resources
 
-**Relay:** `Laika\Engine\Services\Resource` (`resource`). **Class:** `Laika\Engine\Core\App\Resource` (static).
+**Relay:** `Laika\Engine\Services\Resource` (`resource`). **Class:** `Laika\Engine\App\Resource` (static).
 
 A **resource** is a named set of directories, such as `controllers`, `models`, `routes` or `hooks`. There are two kinds:
 - **Class-map resources** have a namespace, and resolve each PHP file to a class name. They can require a contract (an interface or base class).
@@ -186,11 +186,11 @@ A package declares its resources like this, with paths relative to the package r
 
 Names match `[a-z][a-z0-9_]*`, ignoring case. `controller` is accepted as an alias of `controllers`. A declared directory that doesn't exist resolves to nothing rather than failing; run `php laika resource:list` to see definitions and whether their paths exist.
 
-`Laika\Engine\Core\App\ResourceDefinition` is the read-only record behind each location. Its properties are `name`, `path`, `namespace`, `contract` and `source`, and it has `isClassMap()`, `exists()`, `toArray()` and `fromArray()`.
+`Laika\Engine\App\ResourceDefinition` is the read-only record behind each location. Its properties are `name`, `path`, `namespace`, `contract` and `source`, and it has `isClassMap()`, `exists()`, `toArray()` and `fromArray()`.
 
 ## Infra
 
-**Relay:** `Laika\Engine\Services\Infra` (`infra`). **Class:** `Laika\Engine\Core\App\Infra`.
+**Relay:** `Laika\Engine\Services\Infra` (`infra`). **Class:** `Laika\Engine\App\Infra`.
 
 Shortcuts over [Resources](#resources), used by the CLI and the router.
 
@@ -208,7 +208,7 @@ Shortcuts over [Resources](#resources), used by the CLI and the router.
 
 ## MemoryManager
 
-**Class:** `Laika\Engine\Core\System\MemoryManager`.
+**Class:** `Laika\Engine\System\MemoryManager`.
 
 | Method | Does |
 |---|---|
@@ -222,6 +222,6 @@ Shortcuts over [Resources](#resources), used by the CLI and the router.
 - Otherwise it only **lowers** the limit, never raising it above `php.ini`.
 - It throws `RuntimeException` if the target is below the memory already in use.
 
-> **Note:** only laika-queue's `worker` calls `apply()`. Web requests never do, so `MEMORY_LIMIT` in `lf-inc/const.php` currently has no effect on them. To enforce it, call `(new \Laika\Engine\Core\System\MemoryManager())->apply();` from a hook file.
+> **Note:** only laika-queue's `worker` calls `apply()`. Web requests never do, so `MEMORY_LIMIT` in `lf-inc/const.php` currently has no effect on them. To enforce it, call `(new \Laika\Engine\System\MemoryManager())->apply();` from a hook file.
 
 <!-- {% endraw %} -->

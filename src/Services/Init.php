@@ -15,7 +15,7 @@ namespace Laika\Engine\Services;
 use Laika\Engine\Relay\Relay;
 
 /**
- * CLASS: Laika\Engine\Core\Helper\Init
+ * CLASS: Laika\Engine\Helper\Init
  *
  * @method static void db(?string $name = null)
  * @method static void file(array $params = [])

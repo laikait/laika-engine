@@ -48,7 +48,7 @@ Auth::check()                    ← Relay proxy  (static call)
 RelayRegistry::make('auth')      ← Container    (resolves & caches)
     │
     ▼
-Laika\Engine\Core\Auth\Auth::check()    ← Real class   (real method)
+Laika\Engine\Auth\Auth::check()    ← Real class   (real method)
 ```
 
 There are three independent pieces:
@@ -585,8 +585,8 @@ class Auth extends Relay
 - FQCNs or short names both work (short names require `use`).
 
 ```php
-use Laika\Engine\Core\Nav\Helper\Item;
-use Laika\Engine\Core\Nav\Builder;
+use Laika\Engine\Nav\Helper\Item;
+use Laika\Engine\Nav\Builder;
 
 /**
  * @method static Item|Builder  end()
@@ -616,7 +616,7 @@ if (Auth::check()) {
 
 ```php
 // ❌ Wrong — imports the real class, static calls fail
-use Laika\Engine\Core\Auth\Auth;
+use Laika\Engine\Auth\Auth;
 
 Auth::check(); // Fatal: Non-static method cannot be called statically
 ```
@@ -665,7 +665,7 @@ Use `swap()` to replace the resolved instance for a specific Relay — for examp
 
 namespace App\Middleware;
 
-use Laika\Engine\Core\Auth\Auth as AuthService;
+use Laika\Engine\Auth\Auth as AuthService;
 use Laika\Engine\Services\Auth;
 
 class AdminMiddleware
@@ -696,7 +696,7 @@ use Laika\Engine\Services\Auth;
 
 protected function setUp(): void
 {
-    $mock = $this->createMock(\Laika\Engine\Core\Auth\Auth::class);
+    $mock = $this->createMock(\Laika\Engine\Auth\Auth::class);
     $mock->method('check')->willReturn(true);
 
     Auth::swap($mock);

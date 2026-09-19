@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Core\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Laika\Engine\Core\Http\Request;
+use Laika\Engine\Http\Request;
 
 final class RequestAuthorizationTest extends TestCase
 {

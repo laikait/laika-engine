@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Queue\Driver;
 
-use Laika\Engine\Core\Storage\JsonStorage;
+use Laika\Engine\Storage\JsonStorage;
 use Laika\Engine\Queue\Interfaces\FailedJobProviderInterface;
 
 class JsonFailedJobProvider implements FailedJobProviderInterface

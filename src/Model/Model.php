@@ -15,7 +15,7 @@ namespace Laika\Engine\Model;
 use Laika\Engine\Model\Schema\Expression;
 use Laika\Engine\Model\Exceptions\ModelException;
 use Laika\Engine\Model\Exceptions\ConnectionException;
-use Laika\Engine\Core\Support\Macroable;
+use Laika\Engine\Support\Macroable;
 use Laika\Engine\Model\Concerns\BuildsQueries;
 use Laika\Engine\Model\Concerns\Paginates;
 use Laika\Engine\Model\Concerns\SoftDeletes;

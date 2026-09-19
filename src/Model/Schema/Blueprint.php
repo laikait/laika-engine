@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Laika\Engine\Model\Schema;
 
-use Laika\Engine\Core\Support\Macroable;
+use Laika\Engine\Support\Macroable;
 
 /**
  * Blueprint – fluent table column/constraint builder.
