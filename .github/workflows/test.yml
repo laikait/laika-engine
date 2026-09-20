@@ -1,0 +1,95 @@
+name: Laika Engine Test Suite
+
+on:
+  push:
+    branches:
+      - beta
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ########################################################
+  # TEST MATRIX — every supported PHP version
+  ########################################################
+  test:
+    name: PHP ${{ matrix.php-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4', '8.5']
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          # pdo_sqlite backs the Model and Extensions suites; without it their
+          # database tests skip instead of running. The rest are the package's
+          # own requirements.
+          extensions: json, mbstring, openssl, pdo, pdo_sqlite
+          coverage: none
+          tools: composer
+
+      # Validate composer.json
+      - name: Validate composer.json
+        run: composer validate --no-check-publish
+
+      # The lock file is not committed, so the matrix resolves per PHP version
+      - name: Install dependencies
+        run: composer update --no-interaction --no-progress --prefer-dist
+
+      # Lint PHP Syntax
+      - name: Lint PHP syntax
+        run: |
+          find src helpers tests -name '*.php' -print0 | xargs -0 -n1 -P4 php -l > /dev/null
+          php -l bin/laika
+          php -l bin/worker
+
+      # Each module's suite runs in its own process: they need different
+      # APP_PATH values, and a constant can only be defined once.
+      - name: Run test suites
+        run: composer test
+
+      # Every shipped class resolves to the file PSR-4 says it should.
+      # --no-dev on purpose: the suites carry deliberate violations (the Route
+      # service stubs, and fixtures named to test the mismatch report), which
+      # --strict-psr would fail on. It runs last because it rewrites the
+      # autoloader without the test rules.
+      - name: Check autoload is PSR-4 clean
+        run: composer dump-autoload --optimize --strict-psr --no-dev --no-interaction
+
+  ########################################################
+  # PHP 8.1 - 8.5 COMPATIBILITY
+  ########################################################
+  compatibility:
+    name: PHP 8.1-8.5 compatibility
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # v2
+        with:
+          php-version: '8.3'
+          coverage: none
+          tools: composer
+
+      - name: Install dependencies
+        run: composer update --no-interaction --no-progress --prefer-dist
+
+      # Static check against phpcs.xml, which sets testVersion 8.1-8.5.
+      # Runs once: it reads the source rather than executing it, so the PHP
+      # version it runs on does not change the result.
+      - name: Check PHP 8.1-8.5 compatibility
+        run: composer compat
