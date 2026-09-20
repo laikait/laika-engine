@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Laika\Engine\Core\Tests\Unit;
+namespace Laika\Engine\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Laika\Engine\App\Resource;
 use Laika\Engine\App\ResourceDefinition;
 use Laika\Engine\Exceptions\ResourceException;
-use Laika\Engine\Core\Tests\Fixtures\Resource\WidgetInterface;
+use Laika\Engine\Tests\Fixtures\Resource\WidgetInterface;
 
 final class ResourceTest extends TestCase
 {
-    private const NS = 'Laika\\Engine\\\Tests\\Fixtures\\Resource';
+    private const NS = 'Laika\\Engine\\Tests\\Fixtures\\Resource';
 
     private string $fixtures;
 

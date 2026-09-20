@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laika\Engine\Core\Tests\Unit;
+namespace Laika\Engine\Tests\Unit;
 
 use Laika\Engine\Cache\Cache as CacheManager;
 use Laika\Engine\Http\CSRF as CsrfObject;

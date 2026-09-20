@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laika\Engine\Core\Tests\Unit;
+namespace Laika\Engine\Tests\Unit;
 
 use ErrorException;
 use PHPUnit\Framework\TestCase;

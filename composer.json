@@ -62,7 +62,7 @@
     "autoload-dev": {
         "psr-4": {
             "Laika\\Engine\\Cache\\Tests\\": "tests/Cache/",
-            "Laika\\Engine\\\Tests\\": "tests/Core/",
+            "Laika\\Engine\\Tests\\": "tests/Core/",
             "Laika\\Engine\\Model\\Tests\\": "tests/Model/",
             "Laika\\Engine\\Route\\Tests\\": "tests/Route/",
             "Laika\\Engine\\Session\\Tests\\": "tests/Session/",

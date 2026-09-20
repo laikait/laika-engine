@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laika\Engine\Core\Tests\Fixtures\Resource\Model;
+namespace Laika\Engine\Tests\Fixtures\Resource\Model;
 
 class AlphaModel
 {

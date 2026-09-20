@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Laika\Engine\Core\Tests\Unit;
+namespace Laika\Engine\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 use Laika\Engine\Helper\Directory;
