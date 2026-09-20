@@ -28,7 +28,9 @@ class NginxMakeCommand implements CommandInterface
         $force = Argument::getBool('force', $args);
 
         $file = "{$basePath}" . DIRECTORY_SEPARATOR . "nginx.conf";
-        $content = Stub::load('nginx');
+        // Same rules nginx:server writes into its block, from one stub, so
+        // the two cannot drift apart
+        $content = Stub::render('nginx', ['rules' => Stub::load('nginx-rules')]);
 
         // Carry the user's own rules across, unless asked to reset them
         if (!$force && is_file($file)) {
@@ -56,7 +58,11 @@ class NginxMakeCommand implements CommandInterface
         Message::info($include);
         Message::info('The server block MUST define "location = /index.php" -- this file rewrites');
         Message::info('every request there, and without that handler the rewrite loops.');
-        Message::info('Run `php laika nginx:server` for a server block that already does, then `nginx -t`.');
+        Message::info('Its document root MUST be the public/ directory:');
+        Message::info("root {$basePath}" . DIRECTORY_SEPARATOR . 'public;');
+        Message::info('Only need this if you already maintain an nginx config. Otherwise run');
+        Message::info('`php laika nginx:server`: it writes a complete, self-contained server block');
+        Message::info('with these same rules in it, and needs no include. Then `nginx -t`.');
 
         return 0;
     }
