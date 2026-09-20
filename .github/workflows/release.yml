@@ -25,7 +25,7 @@ jobs:
       - name: Prepare release artifact
         run: |
           mkdir build
-          cp -r .github src tests docs  examples helpers stubs .gitignore .gitattributes composer.json phpcs.xml phpunit.xml LICENSE README.md build/
+          cp -r .github .bin docs examples helpers src stubs tests .gitignore .gitattributes composer.json phpcs.xml phpunit.xml.dist LICENSE README.md build/
           echo "${{ github.run_number }}" > build/VERSION
           cd build && zip -r ../${{ env.ARTIFACT }}.zip .
 
