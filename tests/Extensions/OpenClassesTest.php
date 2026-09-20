@@ -40,6 +40,7 @@ class OpenClassesTest extends TestCase
             \Laika\Engine\Model\Converter::class,
             \Laika\Engine\App\Resource::class,
             \Laika\Engine\Relay\RelayBootstrap::class,
+            \Laika\Engine\Cli\EntryPoints::class,
             \Laika\Engine\Helper\MimeType::class,
             \Laika\Engine\Nav\Helper\Renderer::class,
             \Laika\Engine\Generator\Icon::class,

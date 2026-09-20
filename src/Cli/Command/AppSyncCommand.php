@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Laika\Engine\Cli\Command;
 
 use Laika\Engine\Cli\Contracts\CommandInterface;
+use Laika\Engine\Cli\EntryPoints;
 use Laika\Engine\Cli\Stub;
 use Laika\Engine\Services\File;
 use Laika\Engine\Services\Infra;
@@ -24,6 +25,26 @@ class AppSyncCommand implements CommandInterface
         if (count($args) != 0) {
             Message::suggestion($this->command());
             return 1;
+        }
+
+        // Entry Points
+        //
+        // First, so `laika` and `worker` exist even if a later step fails. This
+        // is also what the root composer.json's post-autoload-dump relies on --
+        // it runs `@php laika app:sync` and nothing else.
+        $entries = EntryPoints::write($basePath);
+
+        foreach ($entries['missing'] as $stub) {
+            Message::warning("Entry point stub not found: {$stub}");
+        }
+
+        // Quiet when nothing changed: app:sync runs on every Composer command
+        if ($entries['written']) {
+            Message::info('Generated ' . implode(', ', $entries['written']) . ' in project root.');
+        }
+
+        if ($entries['removed']) {
+            Message::info('Removed ' . implode(', ', $entries['removed']) . ' in project root.');
         }
 
         // Storage Link
@@ -53,7 +74,7 @@ class AppSyncCommand implements CommandInterface
         }
 
         // Make Uploads Directory
-        Directory::make(APP_PATH . DS . 'uploads');
+        Directory::make($basePath . DS . 'uploads');
 
         // Sync .HTACCESS. public/ is the document root and gets the front
         // controller rewrite; the project root gets a deny-all in case a vhost
@@ -110,7 +131,7 @@ class AppSyncCommand implements CommandInterface
     {
         return [
             'signature'     =>  $this->signature(),
-            'description'   =>  'Sync app files and other settings',
+            'description'   =>  'Generate the laika/worker executables, then sync app files and settings',
             'command'       =>  $this->command(),
             'inputs'        =>  [],
             'params'        =>  []

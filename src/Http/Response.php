@@ -31,7 +31,6 @@ class Response
     /** @var mixed Body */
     protected mixed $body = null;
 
-    /** @var const Status Codes */
     protected const STATUS_CODES = [
         // 1xx Informational Responses
         100 => ['message' => 'Continue', 'reference' => 'RFC9110, Section 15.2.1'],
@@ -344,6 +343,7 @@ class Response
         $noBody = ($this->statusCode < 200) || ($this->statusCode === 204) || ($this->statusCode === 304);
 
         http_response_code($this->statusCode);
+        header('X-Engine: Laika');
 
         if (!$noBody) {
             header('Content-Type: ' . static::sanitizeHeaderValue($this->contentType));

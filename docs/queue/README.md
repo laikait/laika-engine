@@ -39,24 +39,28 @@ Installing generates a single `worker` executable in your project root — the s
 | --- | --- | --- |
 | `worker` | all | `php worker default` — or `./worker default` on Linux/macOS |
 
-It is a thin proxy into `vendor/laikait/laika-queue/bin/worker`. It's rewritten only when its contents actually change, and regenerates if you delete it.
+It is a thin proxy into `vendor/laikait/laika-engine/bin/worker`. It's rewritten only when its contents actually change, and regenerates if you delete it.
 
 > **Windows:** run it as `php worker ...`, not a bare `worker ...`. There is deliberately no `worker.bat` shim — cmd and PowerShell resolve commands through `PATHEXT` and will never execute an extensionless file. A `worker.bat` left over from an earlier version is deleted on the next `composer install`.
 
-Generation is driven by `Laika\Engine\Queue\ScriptHandler::generate`. Composer only runs scripts declared by the **root** project, never by a dependency, so a project not created from the framework skeleton needs to wire it itself:
+Generation is driven by `php laika app:sync`, which writes `laika` and `worker` together. Composer only runs scripts declared by the **root** project, never by a dependency, so a project not created from the framework skeleton needs to wire it itself:
 
 ```json
 "scripts": {
     "post-autoload-dump": [
-        "Laika\\Engine\\Queue\\ScriptHandler::generate"
+        "@php laika app:sync"
     ],
     "post-create-project-cmd": [
-        "Laika\\Engine\\Queue\\ScriptHandler::generate"
+        "@php laika app:sync"
     ]
 }
 ```
 
-The framework skeleton already has this. `ScriptHandler` is a safe no-op anywhere `lf-boot/app.php` isn't present, so a global install or the package's own CI won't trip over it.
+`worker` had its own Composer script handler while the queue shipped as a separate package. `Laika\Engine\Queue\ScriptHandler::generate` still exists and calls the same generator, so an older `composer.json` needs no edit — but the line does nothing that `app:sync` does not already do.
+
+The framework skeleton already has this. Generation is a safe no-op anywhere `lf-boot/app.php` isn't present, so a global install or the package's own CI won't trip over it.
+
+Deleting `worker` by hand is recoverable without a Composer run: `php laika app:sync` writes it back.
 
 > This package used to ship as a Composer *plugin*, which forced an `allow-plugins` entry into every consuming project. It's a plain library now — you can drop `"laikait/laika-queue": true` from your `config.allow-plugins`.
 

@@ -6,117 +6,59 @@ namespace Laika\Engine\Cli;
 
 use Composer\Script\Event;
 
+/**
+ * @deprecated since 2.1.0. `php laika app:sync` generates the executables now,
+ * so the root composer.json needs one entry rather than a handler plus a sync:
+ *
+ *   "post-autoload-dump": [
+ *       "@php laika app:sync"
+ *   ]
+ *
+ * That works on a first install, before the root `laika` proxy exists: Composer
+ * checks `@php <name>` against the filesystem and otherwise looks it up on PATH,
+ * to which it has already added the bin-dir — so it resolves through
+ * vendor/bin/laika, which this package ships via its "bin" entry.
+ *
+ * Kept because removing it would break every project still wired against it:
+ * Composer aborts the whole script run on a handler class it cannot autoload,
+ * so `composer install` would fail until each project edited its composer.json.
+ */
 class ScriptHandler
 {
     /**
-     * Generate the `laika` executable in the project root.
+     * Generate the project-root executables from a Composer script.
      *
-     * One file, identical on every platform. Windows has no `.bat` shim, so
-     * the command there is `php laika ...` rather than a bare `laika ...` —
-     * cmd and PowerShell resolve commands through PATHEXT and will never run
-     * an extensionless file. (A *global* install is unaffected: Composer
-     * builds its own vendor/bin shims from this package's "bin" entry.)
+     * The project root is the parent of Composer's configured vendor-dir, so a
+     * project with a custom vendor-dir still resolves correctly.
      *
-     * Wired from the root project's composer.json "scripts" section, since
-     * Composer never runs a dependency's own scripts:
-     *
-     *   "post-autoload-dump": [
-     *       "Laika\\Engine\\Cli\\ScriptHandler::generate",
-     *       ...
-     *   ]
-     *
-     * Safe no-op for anything that isn't a Laika Framework project root
-     * (a global install, or CI for the package itself).
-     *
-     * Stubs are read straight off disk relative to this file rather than
-     * through Stub::load(). A global `composer global require` of this
-     * package registers its own autoloader first, so `Laika\Engine\Cli\Stub` may
-     * resolve to a different installation than this one — and would then
-     * read that installation's stubs/ directory.
+     * Safe no-op for anything that isn't a Laika Framework project root (a
+     * global install, or CI for this package itself), and harmless next to
+     * `app:sync`: generation compares content before writing, so whichever runs
+     * second finds the files already current and does nothing.
      */
     public static function generate(Event $event): void
     {
-        $io          = $event->getIO();
-        $vendorDir   = rtrim($event->getComposer()->getConfig()->get('vendor-dir'), '/\\');
-        $projectRoot = dirname($vendorDir);
+        $io        = $event->getIO();
+        $vendorDir = rtrim((string) $event->getComposer()->getConfig()->get('vendor-dir'), '/\\');
 
-        if (!is_file($projectRoot . '/lf-boot/app.php')) {
-            return; // Not a Laika Framework project root, nothing to do.
+        $result = EntryPoints::write(dirname($vendorDir));
+
+        foreach ($result['missing'] as $stub) {
+            $io->writeError("<warning>Laika: stub not found — {$stub}</warning>");
         }
 
-        $written = [];
+        $notes = [];
 
-        foreach (static::targets($projectRoot) as $target => $stub) {
-            $source = __DIR__ . '/../../stubs/cli/' . $stub . '.stub';
-
-            if (!is_file($source)) {
-                $io->writeError("<warning>Laika CLI: stub not found — {$source}</warning>");
-                continue;
-            }
-
-            $content = file_get_contents($source);
-
-            if (is_file($target) && file_get_contents($target) === $content) {
-                continue; // Already up to date.
-            }
-
-            file_put_contents($target, $content);
-            @chmod($target, 0755);
-
-            $written[] = basename($target);
+        if ($result['written']) {
+            $notes[] = 'generated ' . implode(', ', $result['written']);
         }
 
-        $removed = static::prune($projectRoot);
-        $notes   = [];
-
-        if ($written) {
-            $notes[] = 'generated ' . implode(', ', $written);
-        }
-
-        if ($removed) {
-            $notes[] = 'removed ' . implode(', ', $removed);
+        if ($result['removed']) {
+            $notes[] = 'removed ' . implode(', ', $result['removed']);
         }
 
         if ($notes) {
-            $io->write('<info>Laika CLI:</info> ' . implode(', ', $notes) . ' in project root.');
+            $io->write('<info>Laika:</info> ' . implode(', ', $notes) . ' in project root.');
         }
-    }
-
-    /**
-     * Target files to generate, keyed by absolute path.
-     * @return array<string,string> path => stub name
-     */
-    protected static function targets(string $root): array
-    {
-        return [$root . '/laika' => 'entry'];
-    }
-
-    /**
-     * Delete entry points earlier versions generated but no longer do.
-     *
-     * Matched by the generator marker every generated stub carries, so a
-     * shim someone wrote by hand is left strictly alone.
-     *
-     * @return list<string> basenames actually removed
-     */
-    protected static function prune(string $root): array
-    {
-        $removed = [];
-
-        foreach ([$root . '/laika.bat'] as $legacy) {
-            if (!is_file($legacy)) {
-                continue;
-            }
-
-            if (!str_contains((string) file_get_contents($legacy), 'Auto-generated by laikait/laika-cli')) {
-                continue; // Hand-written — not ours to delete.
-            }
-
-            if (@unlink($legacy)) {
-                $removed[] = basename($legacy);
-            }
-        }
-
-        return $removed;
     }
 }
