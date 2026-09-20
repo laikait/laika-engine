@@ -24,6 +24,16 @@
         <exclude name="PHPCompatibility.Keywords.ForbiddenNames.resourceFound"/>
     </rule>
 
+    <!--
+        Hex strings in the test suites are fixture data, never numbers: a SQL
+        injection payload the detector must catch, and '0xDEADBEEF' as a literal
+        the converter passes through. The sniff is about hex strings used in a
+        numeric context, so it stays on for src/ and helpers/.
+    -->
+    <rule ref="PHPCompatibility.Numbers.RemovedHexadecimalNumericStrings">
+        <exclude-pattern>tests/*</exclude-pattern>
+    </rule>
+
     <!-- Define target PHP version -->
     <config name="testVersion" value="8.1-8.5"/>
 
