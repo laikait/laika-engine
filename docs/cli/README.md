@@ -18,32 +18,43 @@ php laika help
 
 Composer only runs scripts declared by the **root** project, never by a
 dependency. So a project that wasn't created from the framework skeleton
-needs to call the generator itself:
+needs to call `app:sync` itself:
 
 ```json
 "scripts": {
     "post-autoload-dump": [
-        "Laika\\Engine\\Cli\\ScriptHandler::generate"
+        "@php laika app:sync"
     ],
     "post-create-project-cmd": [
-        "Laika\\Engine\\Cli\\ScriptHandler::generate"
+        "@php laika app:sync"
     ]
 }
 ```
 
-Keep `ScriptHandler::generate` **first** in `post-autoload-dump` if later
-entries in that list invoke `laika` themselves — it has to exist before they
-run.
+That one entry writes **both** executables, along with everything else
+`app:sync` does.
+
+It works on a first install, before the root `laika` proxy exists: Composer
+resolves `@php <name>` against the filesystem and, failing that, looks it up on
+`PATH` — to which it has already added the `vendor/bin` directory. This package
+ships `bin/laika` and `bin/worker` as Composer binaries, so the first run goes
+through `vendor/bin/laika` and every later run uses the root proxy directly.
+
+> **Older projects need no edit.** `Laika\Engine\Cli\ScriptHandler::generate`
+> and `Laika\Engine\Queue\ScriptHandler::generate` both still exist and call
+> the same generator, so a `composer.json` written before this keeps working.
+> Whichever runs second finds the files already current and does nothing.
 
 ### What gets generated
 
 | File | Platform | How you run it |
 | --- | --- | --- |
 | `laika` | all | `php laika help` — or `./laika help` on Linux/macOS |
+| `worker` | all | `php worker default` — or `./worker default` on Linux/macOS |
 
-One file, the same on every platform. It is a thin proxy into
-`vendor/laikait/laika-cli`, so it always matches the version this project has
-installed. It is rewritten only when its content actually changes, and
+One file each, the same on every platform. Each is a thin proxy into
+`vendor/laikait/laika-engine/bin/`, so they always match the version this
+project has installed. It is rewritten only when its content actually changes, and
 regenerates if you delete it.
 
 > **Windows:** run it as `php laika ...`, not a bare `laika ...`. There is

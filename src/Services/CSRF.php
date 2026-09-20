@@ -22,7 +22,7 @@ use Laika\Engine\Relay\Relay;
  * @method static string    token()
  * @method static bool      validate(?string $token)
  * @method static ?string   fromRequest(string $header = 'X-Csrf-Token')
- * @method static void      field()
+ * @method static string    field()
  */
 class CSRF extends Relay
 {

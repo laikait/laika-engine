@@ -1,0 +1,155 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Laika\Engine\Cli;
+
+/**
+ * EntryPoints — Writes The `laika` And `worker` Executables Into a Project Root.
+ *
+ * Both are one-line proxies into this package's bin/ directory, so they always
+ * match the version the project has installed. One file each, identical on
+ * every platform: Windows has no `.bat` shim, so the command there is
+ * `php laika ...` rather than a bare `laika ...` — cmd and PowerShell resolve
+ * commands through PATHEXT and will never run an extensionless file. (A
+ * *global* install is unaffected: Composer builds its own vendor/bin shims from
+ * this package's "bin" entry.)
+ *
+ * Two callers, one implementation:
+ *
+ *   - `php laika app:sync`, which is what the root composer.json runs and what
+ *     you run by hand to repair a deleted executable.
+ *   - Cli\ScriptHandler, the Composer script handler, kept so a composer.json
+ *     written before app:sync took this over keeps working.
+ *
+ * It reports what it did rather than printing, because those two callers print
+ * through different channels — Composer's IO and the CLI's Message.
+ */
+class EntryPoints
+{
+    /**
+     * Write The Executables, And Clear Out Superseded Ones
+     *
+     * A safe no-op anywhere that isn't a Laika project root: a global install,
+     * or CI for this package itself.
+     *
+     * @param string $root Project root, the directory holding lf-boot/
+     * @return array{written: string[], removed: string[], missing: string[]}
+     *         basenames touched, plus any stub that was not on disk
+     */
+    public static function write(string $root): array
+    {
+        $root = rtrim($root, '/\\');
+
+        if (!is_file($root . '/lf-boot/app.php')) {
+            return ['written' => [], 'removed' => [], 'missing' => []];
+        }
+
+        $written = [];
+        $missing = [];
+
+        foreach (static::targets($root) as $target => $stub) {
+            $source = static::stub($stub);
+
+            // A stub that is not on disk means a broken installation, not a
+            // file that happens to be current. Reported, never silent.
+            if (!is_file($source)) {
+                $missing[] = $source;
+                continue;
+            }
+
+            $content = file_get_contents($source);
+
+            if (is_file($target) && file_get_contents($target) === $content) {
+                continue; // Already up to date.
+            }
+
+            file_put_contents($target, $content);
+            @chmod($target, 0755);
+
+            $written[] = basename($target);
+        }
+
+        return [
+            'written' => $written,
+            'removed' => static::prune($root),
+            'missing' => $missing,
+        ];
+    }
+
+    ######################################################################################
+    ## --------------------------------- INTERNAL API --------------------------------- ##
+    ######################################################################################
+
+    /**
+     * Absolute Path To a Stub
+     *
+     * Read straight off disk relative to this file rather than through
+     * Stub::load(), for two reasons. Stub::load() hardcodes stubs/cli/ and so
+     * cannot reach the queue stub at all. And under `composer global require`,
+     * the global installation's autoloader is registered first, so
+     * Laika\Engine\Cli\Stub may resolve to a different installation than this
+     * file — which would then read that installation's stubs/ directory.
+     *
+     * @param string $name Stub name, relative to stubs/ and without the extension
+     * @return string
+     */
+    protected static function stub(string $name): string
+    {
+        return __DIR__ . '/../../stubs/' . $name . '.stub';
+    }
+
+    /**
+     * Files To Generate, Keyed By Absolute Path
+     *
+     * The stub name carries its own directory: the two stubs were shipped by
+     * two separate packages and still live in stubs/cli and stubs/queue.
+     *
+     * @param string $root Project root
+     * @return array<string,string> path => stub name, relative to stubs/
+     */
+    protected static function targets(string $root): array
+    {
+        return [
+            $root . '/laika'  => 'cli/entry',
+            $root . '/worker' => 'queue/entry',
+        ];
+    }
+
+    /**
+     * Delete Entry Points Earlier Versions Generated But No Longer Do
+     *
+     * Matched by the generator marker every generated stub carries, so a shim
+     * someone wrote by hand is left strictly alone. The markers name the *old*
+     * split packages on purpose — these files were only ever written by
+     * laika-cli and laika-queue, and that is what identifies them as ours.
+     *
+     * @param string $root Project root
+     * @return list<string> basenames actually removed
+     */
+    protected static function prune(string $root): array
+    {
+        $legacy = [
+            $root . '/laika.bat'  => 'Auto-generated by laikait/laika-cli',
+            $root . '/worker.bat' => 'Auto-generated by laikait/laika-queue',
+        ];
+
+        $removed = [];
+
+        foreach ($legacy as $file => $marker) {
+            if (!is_file($file)) {
+                continue;
+            }
+
+            if (!str_contains((string) file_get_contents($file), $marker)) {
+                continue; // Hand-written — not ours to delete.
+            }
+
+            if (@unlink($file)) {
+                $removed[] = basename($file);
+            }
+        }
+
+        return $removed;
+    }
+}

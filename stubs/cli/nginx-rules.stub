@@ -1,10 +1,18 @@
-# These deny rules are defence in depth, not the primary control. The
-# document root is public/, so the project root (lf-*, vendor/,
-# composer.json) is not reachable by URL at all, and the front controller
-# at the bottom sends every request to PHP, where Laika's
-# Dispatcher::serveAsset() decides what is servable. The rules stay because
-# they cost nothing and still hold if the document root is ever pointed at
-# the project root by mistake.
+# These deny rules are defence in depth, not the primary control -- but do
+# not delete them as "dead because the root is public/". public/ holds only
+# index.php, yet the rest of the project is still reachable BY URL: the
+# rewrite below sends every request to the front controller, and Laika
+# resolves an asset path against the PROJECT ROOT, not the document root
+# (Route\Asset -- that is what lets assets/, template/ and uploads/ stay
+# outside public/). So /vendor/..., /lf-storage/... and /docs/... do name
+# real files.
+#
+# PHP refuses them: Asset::FORBIDDEN_ROOTS ('lf-*', 'vendor', 'docs'), a
+# leading-dot check on every segment, and the extension allowlist in
+# lf-config/assets.php. These rules refuse the same requests one layer
+# earlier, before PHP runs. Keep both -- the PHP side is partly config, and
+# adding an extension to lf-config/assets.php would open what these still
+# close.
 #
 # nginx picks the FIRST matching regex location, so these must stay above
 # the PHP handler.

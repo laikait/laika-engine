@@ -378,7 +378,7 @@ function option_array(string $key, array $default = []): array
 
 /**
  * Insert Option
- * @param string $ksy
+ * @param string $key
  * @param mixed $value
  * @return bool
  */
@@ -389,7 +389,7 @@ function option_insert(string $key, mixed $value): bool
 
 /**
  * Update Option
- * @param string $ksy
+ * @param string $key
  * @param mixed $value
  * @return bool
  */
@@ -643,9 +643,11 @@ function csrf_field(): void
 
 /**
  * Local Language Value
+ * @param string $property
+ * @param mixed ...$args
  * @return string
  */
-function local(string $property, ...$args): string
+function local(string $property, mixed ...$args): string
 {
     // Return if Class Doesn't Exists
     if (!class_exists('LANG')) {

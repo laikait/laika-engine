@@ -50,11 +50,14 @@ scripts.
 
    ```json
    "post-autoload-dump": [
-       "Laika\\Engine\\Cli\\ScriptHandler::generate",
-       "Laika\\Engine\\Queue\\ScriptHandler::generate",
        "@php laika app:sync"
    ]
    ```
+
+   `app:sync` writes both `laika` and `worker` now, so the separate
+   `ScriptHandler::generate` entries are no longer needed. Leaving them in
+   place still works — they call the same generator and find the files already
+   current — but they can be deleted.
 
 3. Prefix every framework import with `Engine\`, for example
    `use Laika\Route\Url;` becomes `use Laika\Engine\Route\Url;`. This one-liner
