@@ -23,16 +23,18 @@ use Laika\Engine\Relay\Exceptions\RelayException;
  * registered by every other provider is guaranteed to be available in the
  * registry — regardless of the order providers were registered.
  *
- * Typical bootstrap usage:
+ * Applications do not build this themselves: helpers/loader.php calls
+ * RelayBootstrap::providers(), which decides what is registered and in what
+ * order, and hands back an unbooted instance:
  *
  *   $registry  = new RelayRegistry();
- *   $providers = new ProviderRegistry($registry);
- *
- *   $providers->register(CoreProviders::class);
- *   $providers->register(PaymentRelayProvider::class);
+ *   $providers = RelayBootstrap::providers($registry);
  *
  *   Relay::setRegistry($registry);   // relays work from here on
  *   $providers->boot();
+ *
+ * Constructing it directly is still supported, and is what the tests do -- it
+ * binds into whatever registry it is given and touches no global state.
  */
 class ProviderRegistry
 {

@@ -408,7 +408,7 @@ use Laika\Engine\Relay\ProviderRegistry;
 $providers = new ProviderRegistry($registry);
 
 // Register accepts class string or instance
-$providers->register(CoreRelayProvider::class);
+$providers->register(CoreProviders::class);
 $providers->register(new PaymentRelayProvider($registry));
 
 // Boot all providers after all register() calls
@@ -431,45 +431,66 @@ if ($providers->has(PaymentRelayProvider::class)) {
 
 Complete application bootstrap sequence:
 
+The framework does this for you in `helpers/loader.php`, which Composer loads on
+every request, CLI command and test process:
+
 ```php
 <?php
 
 use Laika\Engine\Relay\Relay;
+use Laika\Engine\Relay\RelayBootstrap;
 use Laika\Engine\Relay\RelayRegistry;
-use Laika\Engine\Relay\ProviderRegistry;
-use Laika\Engine\Relay\Relays\CoreRelayProvider;
+use Laika\Engine\Route\Invoke;
 
 // 1. Build the container
 $registry  = new RelayRegistry();
 
-// 2. Build the provider manager
-$providers = new ProviderRegistry($registry);
+// 2. Register core providers, then discovered ones, in override order
+$providers = RelayBootstrap::providers($registry);
 
-// 3. Register the Laika core provider (always first)
-$providers->register(CoreRelayProvider::class);
-
-// 4. Register providers declared in config/app.php
-foreach (config('app.providers') as $providerClass) {
-    $providers->register($providerClass);
-}
-
-// 5. Boot all providers (runs after all register() calls are complete)
-$providers->boot();
-
-// 6. Wire the registry into the Relay system
+// 3. Wire the registry into the Relay system -- relays work from here on
 Relay::setRegistry($registry);
+
+// 4. Join the router to the container
+Invoke::setResolver(static fn(string $class): object => $registry->make($class));
+
+// 5. Boot every provider, now that all of them have registered
+$providers->boot();
 ```
 
-`config/app.php`:
+`RelayBootstrap::providers()` returns the `ProviderRegistry` **unbooted**, so the
+caller controls where `boot()` falls — steps 3 and 4 must happen first, because a
+provider's `boot()` may resolve any service.
 
-```php
-return [
-    'providers' => [
-        // Third-party packages
-        Acme\LaikaPayment\PaymentRelayProvider::class,
-        Acme\LaikaBarcode\BarcodeRelayProvider::class,
-    ],
-];
+There is no providers array to maintain. A provider is found because it sits in a
+directory declared as a `relays` resource, which packages and the application both
+declare in `composer.json` under `extra.laika.resources`; the application's own
+`lf-app/Relay` is declared by the framework when the application declares nothing.
+Registration order is core, then packages, then the application — and because
+`RelayRegistry::singleton()` is last-write-wins, that is what lets an application
+rebind a service a package already bound.
+
+A class in one of those directories that does not exist or does not extend
+`RelayProvider` is **skipped, not thrown on**: this runs during autoload, before the
+error handler is installed, so a throw would be an uncatchable fatal with no error
+page. Run `php laika resource:list` to see what was rejected and why.
+
+A package declares its own provider directory in its `composer.json`, and it is
+picked up on install with nothing to edit:
+
+```json
+{
+    "extra": {
+        "laika": {
+            "resources": {
+                "relays": {
+                    "path": "src/Relay",
+                    "namespace": "Acme\\LaikaPayment\\Relay"
+                }
+            }
+        }
+    }
+}
 ```
 
 ---
@@ -532,13 +553,13 @@ class Payment extends Relay
 ```
 composer require acme/laika-payment
         ↓
-Add PaymentRelayProvider to config/app.php
+RelayBootstrap discovers it from extra.laika.resources  (nothing to edit)
         ↓
 Bootstrap: ProviderRegistry calls register() → binds 'payment'
         ↓
-Bootstrap: ProviderRegistry calls boot()     → configures with API key
-        ↓
 Relay::setRegistry($registry)
+        ↓
+Bootstrap: ProviderRegistry calls boot()     → configures with API key
         ↓
 Payment::charge() → __callStatic → make('payment') → PaymentGateway::charge()
 ```

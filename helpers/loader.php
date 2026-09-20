@@ -13,10 +13,7 @@ declare(strict_types=1);
 
 use Laika\Engine\Relay\Relay;
 use Laika\Engine\Relay\RelayRegistry;
-use Laika\Engine\Relay\CoreProviders;
-use Laika\Engine\Relay\ProviderRegistry;
-use Laika\Engine\Relay\RelayProvider;
-use Laika\Engine\App\Resource;
+use Laika\Engine\Relay\RelayBootstrap;
 use Laika\Engine\System\MemoryManager;
 use Laika\Engine\Route\Invoke;
 
@@ -53,49 +50,14 @@ defined('LANG_PATH') || define('LANG_PATH', APP_PATH . DS . 'lf-lang');
 /*--------------------------------- RELAY LOADER ---------------------------------*/
 ####################################################################################
 
-// Get Relay Registry Object
-$registry = new RelayRegistry();
-$providers = new ProviderRegistry($registry);
-
-// Register Core Services
-$providers->register(CoreProviders::class);
-
-// Register The Cache
+// Build The Container
 //
-// The cache provider is also declared as a `relays` resource, so auto-discovery
-// below finds it too. Registering it here as well makes the cache a core service
-// even when a compiled manifest is stale, and is harmless alongside discovery:
-// ProviderRegistry de-duplicates by class name. It comes before discovery so an
-// application provider binding 'cache' still wins.
-$providers->register(\Laika\Engine\Cache\Relay\CacheRelay::class);
-
-// Auto Discover Relay Providers
-//
-// Packages and the application both declare a `relays` resource - a directory of
-// RelayProvider classes. Packages are registered first so an application provider
-// can still override a package binding: RelayRegistry::singleton() is
-// last-write-wins, and Resource seeds framework defaults before packages.
-$packageRelays = [];
-$appRelays = [];
-
-foreach (Resource::definitions('relays') as $definition) {
-    if (in_array($definition->source, ['default', 'app'], true)) {
-        $appRelays[] = $definition;
-    } else {
-        $packageRelays[] = $definition;
-    }
-}
-
-foreach (array_merge($packageRelays, $appRelays) as $definition) {
-    foreach (Resource::entries($definition) as $className) {
-        // Tolerant on purpose: the shipped lf-app/Relay/Example.php stub is fully
-        // commented out, and this runs before Handler::register() below - a throw
-        // here would be an uncatchable fatal with no error page.
-        if (class_exists($className) && is_subclass_of($className, RelayProvider::class)) {
-            $providers->register($className);
-        }
-    }
-}
+// RelayBootstrap decides which providers are registered and in what order -- core
+// first, then packages, then the application, because RelayRegistry::singleton() is
+// last-write-wins. This file keeps the wiring, so the whole sequence stays readable
+// in one place.
+$registry  = new RelayRegistry();
+$providers = RelayBootstrap::providers($registry);
 
 // Wire Registry
 Relay::setRegistry($registry);
@@ -107,6 +69,14 @@ Relay::setRegistry($registry);
 // through RelayRegistry::make() from here on, so their constructor dependencies are
 // auto-wired; without this call the router falls back to a plain `new`.
 Invoke::setResolver(static fn(string $class): object => $registry->make($class));
+
+// Boot Providers
+//
+// Phase two of the provider lifecycle: every service is registered by now, so a
+// provider's boot() may resolve any of them. It is also where CoreProviders installs
+// the error handler, so everything below this line is covered by a real error page
+// rather than a bare fatal.
+$providers->boot();
 
 // Query Result Caching
 //
@@ -139,9 +109,6 @@ unset($queryCache);
         fwrite(STDERR, "[laika] process reset: {$failure}\n");
     }
 });
-
-// Boot Providers
-$providers->boot();
 
 // Relay providers are the only resource read during autoload. Every other resource
 // stays lazy: packages - laika-engine included - declare them in composer.json under
