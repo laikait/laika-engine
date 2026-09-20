@@ -65,7 +65,7 @@ vendor/bin/phpcs --standard=phpcs.xml
 
 ## Documentation
 
-[Caching](https://github.com/laikait/laika-framework/blob/main/docs/20_cache/01_basic.md) in the framework docs covers configuration, query-result caching, response caching and the `{% cache %}` Twig tag.
+[Caching](https://github.com/laikait/laika-framework/blob/main/docs/20_cache/01_basic.md) in the framework docs covers configuration, query-result caching, response caching and the {% raw %}`{% cache %}`{% endraw %} Twig tag.
 
 ## License
 

@@ -68,7 +68,7 @@ scripts.
 
 4. Move `index.php` into `public/` and point the web server's document root at
    `public/`. `php laika app:sync` writes `public/.htaccess`, and
-   `php laika nginx:server` emits a server block rooted at `public/`.
+   `php laika nginx:server` emits a complete server block rooted at `public/`.
 
 ## Upgrading to 2.0
 

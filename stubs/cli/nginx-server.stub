@@ -1,4 +1,5 @@
-# Laika server block. Drop this in /etc/nginx/sites-available/ and symlink
+# Laika server block. Complete and self-contained -- it includes no other
+# file from the project. Drop it in /etc/nginx/sites-available/ and symlink
 # it into sites-enabled/, or paste it into your existing nginx config.
 #
 #   nginx -t && systemctl reload nginx
@@ -17,17 +18,12 @@ server {
 
     client_max_body_size {{upload}};
 
-    # Framework-managed rules (deny lists, front-controller rewrite).
-    # Regenerate with `php laika nginx:make`. Keep this include above the
-    # handler below: the deny rules are regex locations and nginx uses the
-    # first matching one, so they must be seen first.
-    include {{root}}/nginx.conf;
+{{rules}}
 
     # The only PHP that is ever executed. An exact-match location cannot be
-    # reached by any other path, so no file other
-    # than the front controller can be run even if one is written into a
-    # served directory. It also terminates the rewrite in nginx.conf --
-    # without this block that rewrite loops.
+    # reached by any other path, so no file other than the front controller
+    # can be run -- and public/ holds nothing else anyway. It also terminates
+    # the rewrite above; without this block that rewrite loops.
     location = /index.php {
         fastcgi_pass {{fastcgi}};
         fastcgi_index index.php;
